@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comercial García - Sistema de Inventario</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 Comercial García</h1>
+            <p>Sistema de Inventario - Simple, Rápido, Confiable</p>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="showSection('dashboard')">📊 Panel Principal</button>
+            <button class="nav-btn" onclick="showSection('add-product')">➕ Agregar Producto</button>
+            <button class="nav-btn" onclick="showSection('inventory')">📦 Ver Inventario</button>
+            <button class="nav-btn" onclick="showSection('sell')">💰 Vender</button>
+            <button class="nav-btn" onclick="showSection('restock')">📈 Reabastecer</button>
+            <button class="nav-btn" onclick="showSection('barcode')">📱 Código de Barras</button>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="total-products">0</div>
+                    <div class="stat-label">Total Productos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="low-stock-count">0</div>
+                    <div class="stat-label">Stock Bajo</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="total-value">$0</div>
+                    <div class="stat-label">Valor Total Inventario</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="categories-count">0</div>
+                    <div class="stat-label">Categorías</div>
+                </div>
+            </div>
+            
+            <div id="low-stock-alerts"></div>
+        </div>
+
+        <!-- Add Product Section -->
+        <div id="add-product" class="section">
+            <h2 style="margin-bottom: 20px; color: #2c3e50;">Agregar Nuevo Producto</h2>
+            <form id="add-product-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sku">SKU (Código de Producto)</label>
+                        <input type="text" id="sku" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="barcode">Código de Barras</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="barcode" placeholder="Opcional">
+                            <button type="button" class="btn" onclick="scanBarcodeForAdd()">📱 Escanear</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">Nombre del Producto</label>
+                        <input type="text" id="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Categoría</label>
+                        <select id="category" required>
+                            <option value="">Seleccionar Categoría</option>
+                            <option value="Tornillos">Tornillos</option>
+                            <option value="Herramientas">Herramientas</option>
+                            <option value="Pinturas">Pinturas</option>
+                            <option value="Ferretería">Ferretería</option>
+                            <option value="Eléctrico">Eléctrico</option>
+                            <option value="Plomería">Plomería</option>
+                            <option value="Jardín">Jardín</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="price">Precio ($)</label>
+                        <input type="number" id="price" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Cantidad Inicial</label>
+                        <input type="number" id="quantity" min="0" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="min-stock">Alerta Stock Mínimo</label>
+                        <input type="number" id="min-stock" min="0" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label for="supplier">Proveedor (Opcional)</label>
+                        <input type="text" id="supplier" placeholder="Nombre del proveedor">
+                    </div>
+                </div>
+                <button type="submit" class="btn">Agregar Producto</button>
+            </form>
+        </div>
+
+        <!-- Inventory Section -->
+        <div id="inventory" class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="color: #2c3e50; margin: 0;">Gestión de Inventario</h2>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" onclick="exportData()">📤 Exportar</button>
+                    <label for="import-file" class="btn" style="margin: 0; cursor: pointer;">📥 Importar</label>
+                    <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+                </div>
+            </div>
+            
+            <input type="text" id="search" class="search-bar" placeholder="🔍 Buscar por SKU, nombre, categoría o código de barras...">
+            
+            <div style="margin-bottom: 20px;">
+                <select id="category-filter" onchange="filterInventory()">
+                    <option value="">Todas las Categorías</option>
+                </select>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Nombre / Código de Barras</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Cantidad</th>
+                            <th>Stock Mín</th>
+                            <th>Valor</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-body">
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center; color: #7f8c8d;">
+                <p><strong>Atajos de teclado:</strong> Ctrl+1 (Panel), Ctrl+2 (Agregar), Ctrl+3 (Inventario), Ctrl+4 (Vender), Ctrl+5 (Reabastecer), Ctrl+6 (Código de Barras)</p>
+            </div>
+        </div>
+
+        <!-- Sell Item Section -->
+        <div id="sell" class="section">
+            <h2 style="margin-bottom: 20px; color: #2c3e50;">Vender Producto</h2>
+            <form id="sell-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="sell-sku">SKU, Código de Barras o Nombre</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="sell-sku" placeholder="Buscar producto" required>
+                            <button type="button" class="btn" onclick="scanBarcodeForSell()">📱 Escanear</button>
+                        </div>
+                        <div id="search-suggestions" style="background: white; border: 1px solid #ddd; max-height: 200px; overflow-y: auto; display: none;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="sell-quantity">Cantidad a Vender</label>
+                        <input type="number" id="sell-quantity" min="1" required>
+                    </div>
+                </div>
+                <div id="product-info" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px; display: none;">
+                    <h3>Detalles del Producto:</h3>
+                    <p id="product-details"></p>
+                </div>
+                <button type="submit" class="btn">Completar Venta</button>
+            </form>
+        </div>
+
+        <!-- Restock Section -->
+        <div id="restock" class="section">
+            <h2 style="margin-bottom: 20px; color: #2c3e50;">Reabastecer Productos</h2>
+            <form id="restock-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="restock-sku">SKU, Código de Barras o Nombre</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="restock-sku" placeholder="Buscar producto" required>
+                            <button type="button" class="btn" onclick="scanBarcodeForRestock()">📱 Escanear</button>
+                        </div>
+                        <div id="restock-suggestions" style="background: white; border: 1px solid #ddd; max-height: 200px; overflow-y: auto; display: none;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="restock-quantity">Cantidad a Agregar</label>
+                        <input type="number" id="restock-quantity" min="1" required>
+                    </div>
+                </div>
+                <div id="restock-product-info" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px; display: none;">
+                    <h3>Detalles del Producto:</h3>
+                    <p id="restock-product-details"></p>
+                </div>
+                <button type="submit" class="btn">Agregar Stock</button>
+            </form>
+        </div>
+
+        <!-- Barcode Scanner Section -->
+        <div id="barcode" class="section">
+            <h2 style="margin-bottom: 20px; color: #2c3e50;">Escáner de Código de Barras</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px;">
+                <div>
+                    <h3 style="margin-bottom: 15px;">Búsqueda Rápida</h3>
+                    <div class="form-group">
+                        <label for="barcode-search">Código de Barras</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="barcode-search" placeholder="Escanear o ingresar código">
+                            <button type="button" class="btn" onclick="startBarcodeScanning()">📱 Iniciar Escáner</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn" onclick="searchByBarcode()">🔍 Buscar Producto</button>
+                </div>
+                
+                <div>
+                    <h3 style="margin-bottom: 15px;">Venta Rápida</h3>
+                    <div class="form-group">
+                        <label for="quick-barcode">Código de Barras</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="quick-barcode" placeholder="Escanear producto">
+                            <button type="button" class="btn" onclick="startQuickSaleScanning()">📱 Escanear</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="quick-quantity">Cantidad</label>
+                        <input type="number" id="quick-quantity" value="1" min="1">
+                    </div>
+                    <button type="button" class="btn" onclick="quickSale()">⚡ Venta Rápida</button>
+                </div>
+            </div>
+
+            <!-- Camera Scanner -->
+            <div id="camera-container" style="display: none; text-align: center; margin: 20px 0;">
+                <h3>Escáner de Cámara</h3>
+                <video id="barcode-video" style="width: 100%; max-width: 500px; border: 2px solid #3498db; border-radius: 10px;"></video>
+                <div style="margin: 10px 0;">
+                    <button type="button" class="btn btn-danger" onclick="stopBarcodeScanning()">Detener Escáner</button>
+                </div>
+                <canvas id="barcode-canvas" style="display: none;"></canvas>
+            </div>
+
+            <div id="barcode-result" style="margin: 20px 0;"></div>
+        </div>
+
+        <div id="alerts"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/database.js"></script>
+    <script src="js/barcode-scanner.js"></script>
+    <script src="js/inventory-manager.js"></script>
+    <script src="js/ui-controller.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
