@@ -358,7 +358,7 @@ class ComercialGarciaApp {
 // Initialize application when DOM is loaded
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const app = new ComercialGarciaApp();
+        const app = new SecureComercialGarciaApp();  // ✅ Use the secure version
         await app.init();
     } catch (error) {
         console.error('Failed to initialize application:', error);

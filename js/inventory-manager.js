@@ -50,59 +50,60 @@ class InventoryManager {
      * Initialize with sample data for demo purposes
      */
     async initializeSampleData() {
-        const sampleProducts = [
-            { 
-                sku: 'TOR001', 
-                name: 'Tornillo Madera 2" Phillips', 
-                category: 'Tornillos', 
-                price: 0.25, 
-                quantity: 150, 
-                minStock: 20, 
-                barcode: '1234567890123', 
-                supplier: 'Ferretería Central' 
-            },
-            { 
-                sku: 'MAR001', 
-                name: 'Martillo Garra 16oz', 
-                category: 'Herramientas', 
-                price: 24.99, 
-                quantity: 8, 
-                minStock: 5, 
-                barcode: '2345678901234', 
-                supplier: 'Herramientas Pro' 
-            },
-            { 
-                sku: 'PIN001', 
-                name: 'Pintura Interior Blanca 1gal', 
-                category: 'Pinturas', 
-                price: 34.99, 
-                quantity: 3, 
-                minStock: 5, 
-                barcode: '3456789012345', 
-                supplier: 'Pinturas García' 
-            },
-            { 
-                sku: 'TUE001', 
-                name: 'Tuerca Hex 1/4"', 
-                category: 'Ferretería', 
-                price: 0.15, 
-                quantity: 200, 
-                minStock: 25, 
-                barcode: '4567890123456', 
-                supplier: 'Ferretería Central' 
-            },
-            { 
-                sku: 'CAB001', 
-                name: 'Cable Cobre 12AWG 100ft', 
-                category: 'Eléctrico', 
-                price: 89.99, 
-                quantity: 2, 
-                minStock: 3, 
-                barcode: '5678901234567', 
-                supplier: 'Eléctricos SA' 
-            }
-        ];
+// Replace the sampleProducts array in js/inventory-manager.js initializeSampleData() method
 
+const sampleProducts = [
+    { 
+        sku: 'TOR001', 
+        name: 'Tornillo Madera 2" Phillips', 
+        category: 'Tornillos y Pernos', // Updated category
+        price: 0.25, 
+        quantity: 150, 
+        minStock: 20, 
+        barcode: '1234567890123', 
+        supplier: 'Ferretería Central' 
+    },
+    { 
+        sku: 'MAR001', 
+        name: 'Martillo Garra 16oz', 
+        category: 'Herramientas Manuales', // Updated category
+        price: 24.99, 
+        quantity: 8, 
+        minStock: 5, 
+        barcode: '2345678901234', 
+        supplier: 'Herramientas Pro' 
+    },
+    { 
+        sku: 'PIN001', 
+        name: 'Pintura Interior Blanca 1gal', 
+        category: 'Pinturas y Barnices', // Updated category
+        price: 34.99, 
+        quantity: 3, 
+        minStock: 5, 
+        barcode: '3456789012345', 
+        supplier: 'Pinturas García' 
+    },
+    { 
+        sku: 'TUE001', 
+        name: 'Tuerca Hex 1/4"', 
+        category: 'Ferretería General', // Updated category
+        price: 0.15, 
+        quantity: 200, 
+        minStock: 25, 
+        barcode: '4567890123456', 
+        supplier: 'Ferretería Central' 
+    },
+    { 
+        sku: 'CAB001', 
+        name: 'Cable Cobre 12AWG 100ft', 
+        category: 'Material Eléctrico', // Updated category
+        price: 89.99, 
+        quantity: 2, 
+        minStock: 3, 
+        barcode: '5678901234567', 
+        supplier: 'Eléctricos SA' 
+    }
+];
         for (const productData of sampleProducts) {
             const product = this.createProduct(productData);
             await this.addProduct(product);
