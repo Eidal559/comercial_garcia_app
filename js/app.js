@@ -41,9 +41,6 @@ class ComercialGarciaApp {
             this.uiController = new UIController(this.inventoryManager, this.barcodeScanner);
             console.log('✅ Controlador de UI inicializado');
             
-            // Setup global functions for HTML onclick events
-            this.setupGlobalFunctions();
-            
             // Hide loading state
             this.hideLoadingState();
             
@@ -54,74 +51,6 @@ class ComercialGarciaApp {
             console.error('❌ Error inicializando la aplicación:', error);
             this.showError('Error inicializando la aplicación: ' + error.message);
         }
-    }
-
-    /**
-     * Setup global functions accessible from HTML
-     */
-    setupGlobalFunctions() {
-        // Make instances globally accessible
-        window.app = this;
-        window.inventoryManager = this.inventoryManager;
-        window.barcodeScanner = this.barcodeScanner;
-        window.uiController = this.uiController;
-        
-        // Navigation functions
-        window.showSection = (sectionId) => {
-            if (this.uiController) {
-                this.uiController.showSection(sectionId);
-            }
-        };
-        
-        // Barcode scanning functions
-        window.scanBarcodeForAdd = () => this.scanBarcodeForField('barcode');
-        window.scanBarcodeForSell = () => this.scanBarcodeForField('sell-sku');
-        window.scanBarcodeForRestock = () => this.scanBarcodeForField('restock-sku');
-        window.startBarcodeScanning = () => this.startGeneralBarcodeScanning();
-        window.startQuickSaleScanning = () => this.scanBarcodeForField('quick-barcode');
-        window.stopBarcodeScanning = () => this.barcodeScanner.stopScanning();
-        
-        // Search and product info functions
-        window.searchByBarcode = () => this.searchProductByBarcode();
-        window.showSellProductInfo = (identifier) => {
-            if (this.uiController) {
-                this.uiController.showSellProductInfo(identifier);
-            }
-        };
-        window.showRestockProductInfo = (identifier) => {
-            if (this.uiController) {
-                this.uiController.showRestockProductInfo(identifier);
-            }
-        };
-        
-        // Quick sale function
-        window.quickSale = () => this.performQuickSale();
-        
-        // Import/Export functions
-        window.exportData = () => {
-            if (this.uiController) {
-                this.uiController.exportData();
-            }
-        };
-        window.importData = (event) => {
-            if (this.uiController) {
-                this.uiController.handleImport(event);
-            }
-        };
-        
-        // Filter function
-        window.filterInventory = () => {
-            if (this.uiController) {
-                this.uiController.filterInventory();
-            }
-        };
-        
-        // Alert function
-        window.showAlert = (message, type) => {
-            if (this.uiController) {
-                this.uiController.showAlert(message, type);
-            }
-        };
     }
 
     /**
@@ -354,16 +283,6 @@ class ComercialGarciaApp {
         console.log('Application destroyed');
     }
 }
-
-// Initialize application when DOM is loaded
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        const app = new SecureComercialGarciaApp();  // ✅ Use the secure version
-        await app.init();
-    } catch (error) {
-        console.error('Failed to initialize application:', error);
-    }
-});
 
 // Handle app lifecycle
 window.addEventListener('beforeunload', () => {

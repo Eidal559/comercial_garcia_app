@@ -9,11 +9,40 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🔧</text></svg>">
 </head>
 <body>
-    <div class="container">
+    <!-- Login Overlay (will be shown first) -->
+    <div id="login-overlay" class="login-overlay" style="display: block;">
+        <div class="login-form">
+            <h2>🔐 Acceso al Sistema</h2>
+            <p style="color: #7f8c8d; margin-bottom: 30px;">Comercial García - Sistema de Inventario</p>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Usuario</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn">
+                    Iniciar Sesión
+                </button>
+            </form>
+            <div id="login-message" class="login-attempts"></div>
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ecf0f1; font-size: 12px; color: #7f8c8d;">
+                <strong>Usuarios por defecto:</strong><br>
+                admin / CG2024 (Administrador)<br>
+                gerente / FERR2024 (Gerente)<br>
+                vendedor / VENTA2024 (Vendedor)
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application (will be shown after login) -->
+    <div id="main-app" class="container" style="display: none;">
         <div class="header hardware-tools-bg">
             <h1>🔧 Comercial García</h1>
             <p>Sistema de Inventario Ferretero - Robusto, Confiable, Seguro</p>
-            <div id="user-info" style="position: absolute; top: 15px; right: 15px; color: white; font-size: 14px; display: none;">
+            <div id="user-info" style="position: absolute; top: 15px; right: 15px; color: white; font-size: 14px;">
                 <span id="current-user"></span> | 
                 <button onclick="logout()" style="background: none; border: 1px solid white; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
                     🚪 Salir
@@ -68,7 +97,7 @@
             
             <div id="low-stock-alerts"></div>
             
-            <div id="session-info" style="margin-top: 20px; padding: 15px; background: rgba(52, 152, 219, 0.1); border-radius: 10px; border-left: 4px solid #3498db; display: none;">
+            <div id="session-info" style="margin-top: 20px; padding: 15px; background: rgba(52, 152, 219, 0.1); border-radius: 10px; border-left: 4px solid #3498db;">
                 <h4 style="margin-bottom: 10px; color: #2c3e50;">🔐 Información de Sesión</h4>
                 <div id="session-details"></div>
             </div>
@@ -175,10 +204,6 @@
                     <tbody id="inventory-body">
                     </tbody>
                 </table>
-            </div>
-            
-            <div style="margin-top: 20px; text-align: center; color: #7f8c8d;">
-                <p><strong>⌨️ Atajos de teclado:</strong> Ctrl+1 (Panel), Ctrl+2 (Agregar), Ctrl+3 (Inventario), Ctrl+4 (Vender), Ctrl+5 (Reabastecer), Ctrl+6 (Código de Barras)</p>
             </div>
         </div>
 
@@ -325,61 +350,192 @@
     <script src="js/app.js"></script>
     
     <script>
-        // Initialize secure application when DOM loads
+        // Global variables
+        let app;
+        let authSystem;
+        
+        // Initialize application when DOM loads
         document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const app = new SecureComercialGarciaApp();
-                await app.init();
+                console.log('🔐 Inicializando Sistema Seguro...');
                 
-                // Show user info and setup UI permissions
-                if (window.authSystem && window.authSystem.isUserAuthenticated()) {
-                    const userInfo = document.getElementById('user-info');
-                    const currentUser = document.getElementById('current-user');
-                    const sessionInfo = document.getElementById('session-info');
-                    const sessionDetails = document.getElementById('session-details');
-                    
-                    if (userInfo && currentUser) {
-                        currentUser.textContent = `👤 ${window.authSystem.getCurrentUser()}`;
-                        userInfo.style.display = 'block';
-                    }
-                    
-                    // Show session info on dashboard
-                    if (sessionInfo && sessionDetails) {
-                        const session = window.authSystem.getSessionInfo();
-                        if (session) {
-                            sessionDetails.innerHTML = `
-                                <strong>Usuario:</strong> ${session.user}<br>
-                                <strong>Inicio de sesión:</strong> ${session.loginTime.toLocaleString()}<br>
-                                <strong>Última actividad:</strong> ${session.lastActivity.toLocaleString()}<br>
-                                <strong>Tiempo restante:</strong> ${Math.ceil(session.timeLeft / 1000 / 60)} minutos
-                            `;
-                            sessionInfo.style.display = 'block';
-                        }
-                    }
-                    
-                    // Setup permission-based UI
-                    setupPermissionBasedUI();
-                }
+                // Initialize authentication system first
+                authSystem = new AuthenticationSystem();
+                window.authSystem = authSystem;
+                
+                // Setup login form handler
+                setupLoginForm();
+                
+                console.log('✅ Sistema de autenticación inicializado');
                 
             } catch (error) {
-                console.error('Failed to initialize secure application:', error);
-                document.body.innerHTML = `
-                    <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: #2c3e50; color: white; text-align: center;">
-                        <div>
-                            <h1>❌ Error del Sistema</h1>
-                            <p>No se pudo inicializar la aplicación.</p>
-                            <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #e67e22; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                                🔄 Recargar
-                            </button>
-                        </div>
-                    </div>
-                `;
+                console.error('Failed to initialize application:', error);
+                showError('Error inicializando la aplicación: ' + error.message);
             }
         });
         
-        // Setup permission-based UI visibility
+        function setupLoginForm() {
+            const loginForm = document.getElementById('login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', handleLogin);
+            }
+            
+            // Focus username field
+            setTimeout(() => {
+                const usernameField = document.getElementById('username');
+                if (usernameField) {
+                    usernameField.focus();
+                }
+            }, 100);
+        }
+        
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('login-message');
+
+            if (!username || !password) {
+                messageDiv.textContent = 'Por favor, complete todos los campos';
+                messageDiv.style.color = '#e74c3c';
+                return;
+            }
+
+            // Attempt authentication
+            const result = authSystem.authenticate(username, password);
+            
+            if (result.success) {
+                messageDiv.textContent = 'Acceso autorizado...';
+                messageDiv.style.color = '#27ae60';
+                
+                // Hide login overlay and show main app
+                setTimeout(async () => {
+                    document.getElementById('login-overlay').style.display = 'none';
+                    document.getElementById('main-app').style.display = 'block';
+                    
+                    // Update user info
+                    document.getElementById('current-user').textContent = `👤 ${username}`;
+                    
+                    // Initialize the main application
+                    await initializeMainApp();
+                }, 1000);
+                
+            } else {
+                messageDiv.textContent = result.message;
+                messageDiv.style.color = '#e74c3c';
+                
+                // Clear password field
+                document.getElementById('password').value = '';
+            }
+        }
+        
+        async function initializeMainApp() {
+            try {
+                // Initialize the main app without authentication (since we're already authenticated)
+                app = new ComercialGarciaApp();
+                await app.init();
+                
+                // Make instances globally accessible
+                window.app = app;
+                window.inventoryManager = app.inventoryManager;
+                window.barcodeScanner = app.barcodeScanner;
+                window.uiController = app.uiController;
+                
+                // Setup global functions
+                setupGlobalFunctions();
+                
+                // Setup permission-based UI
+                setupPermissionBasedUI();
+                
+                // Update session info
+                updateSessionInfo();
+                
+                console.log('🎉 Aplicación principal inicializada exitosamente');
+                
+            } catch (error) {
+                console.error('Error initializing main app:', error);
+                showError('Error inicializando la aplicación: ' + error.message);
+            }
+        }
+        
+        function setupGlobalFunctions() {
+            // Navigation functions
+            window.showSection = (sectionId) => {
+                if (app.uiController) {
+                    app.uiController.showSection(sectionId);
+                }
+            };
+            
+            // Authentication functions
+            window.logout = () => {
+                if (confirm('¿Está seguro de que desea cerrar sesión?')) {
+                    authSystem.logout();
+                    document.getElementById('main-app').style.display = 'none';
+                    document.getElementById('login-overlay').style.display = 'block';
+                    setupLoginForm();
+                }
+            };
+            
+            // Permission check function
+            window.checkPermission = (permission) => {
+                const permissions = authSystem.getUserPermissions();
+                return permissions[permission] || false;
+            };
+            
+            // Barcode scanning functions
+            window.scanBarcodeForAdd = () => app.scanBarcodeForField('barcode');
+            window.scanBarcodeForSell = () => app.scanBarcodeForField('sell-sku');
+            window.scanBarcodeForRestock = () => app.scanBarcodeForField('restock-sku');
+            window.startBarcodeScanning = () => app.startGeneralBarcodeScanning();
+            window.startQuickSaleScanning = () => app.scanBarcodeForField('quick-barcode');
+            window.stopBarcodeScanning = () => app.barcodeScanner.stopScanning();
+            
+            // Search and product info functions
+            window.searchByBarcode = () => app.searchProductByBarcode();
+            window.showSellProductInfo = (identifier) => {
+                if (app.uiController) {
+                    app.uiController.showSellProductInfo(identifier);
+                }
+            };
+            window.showRestockProductInfo = (identifier) => {
+                if (app.uiController) {
+                    app.uiController.showRestockProductInfo(identifier);
+                }
+            };
+            
+            // Quick sale function
+            window.quickSale = () => app.performQuickSale();
+            
+            // Import/Export functions
+            window.exportData = () => {
+                if (app.uiController) {
+                    app.uiController.exportData();
+                }
+            };
+            window.importData = (event) => {
+                if (app.uiController) {
+                    app.uiController.handleImport(event);
+                }
+            };
+            
+            // Filter function
+            window.filterInventory = () => {
+                if (app.uiController) {
+                    app.uiController.filterInventory();
+                }
+            };
+            
+            // Alert function
+            window.showAlert = (message, type) => {
+                if (app.uiController) {
+                    app.uiController.showAlert(message, type);
+                }
+            };
+        }
+        
         function setupPermissionBasedUI() {
-            const permissions = window.authSystem.getUserPermissions();
+            const permissions = authSystem.getUserPermissions();
             
             // Hide/show navigation buttons based on permissions
             document.querySelectorAll('[data-permission]').forEach(element => {
@@ -388,38 +544,41 @@
                     element.style.display = 'none';
                 }
             });
-            
-            // Update form buttons based on permissions
-            updateFormPermissions(permissions);
         }
         
-        // Update form permissions
-        function updateFormPermissions(permissions) {
-            // Disable/enable buttons based on permissions
-            if (!permissions.canAddProducts) {
-                const addForm = document.getElementById('add-product-form');
-                if (addForm) {
-                    const submitBtn = addForm.querySelector('button[type="submit"]');
-                    if (submitBtn) {
-                        submitBtn.disabled = true;
-                        submitBtn.textContent = '🚫 Sin Permisos';
-                    }
+        function updateSessionInfo() {
+            const sessionInfo = authSystem.getSessionInfo();
+            const sessionDetails = document.getElementById('session-details');
+            
+            if (sessionInfo && sessionDetails) {
+                sessionDetails.innerHTML = `
+                    <strong>Usuario:</strong> ${sessionInfo.user}<br>
+                    <strong>Inicio de sesión:</strong> ${sessionInfo.loginTime.toLocaleString()}<br>
+                    <strong>Última actividad:</strong> ${sessionInfo.lastActivity.toLocaleString()}<br>
+                    <strong>Tiempo restante:</strong> ${Math.ceil(sessionInfo.timeLeft / 1000 / 60)} minutos
+                `;
+            }
+        }
+        
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.innerHTML = `
+                <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
+                           background: #f8d7da; color: #721c24; padding: 15px; border-radius: 10px; 
+                           border: 1px solid #f5c6cb; z-index: 10000; max-width: 500px;">
+                    <strong>Error:</strong> ${message}
+                    <button style="float: right; background: none; border: none; font-size: 18px; 
+                                  cursor: pointer;" onclick="this.parentElement.remove()">×</button>
+                </div>
+            `;
+            document.body.appendChild(errorDiv);
+            
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                if (errorDiv.parentElement) {
+                    errorDiv.remove();
                 }
-            }
-            
-            if (!permissions.canEditProducts) {
-                document.querySelectorAll('.action-buttons .btn:not(.btn-danger)').forEach(btn => {
-                    btn.disabled = true;
-                    btn.style.opacity = '0.5';
-                });
-            }
-            
-            if (!permissions.canDeleteProducts) {
-                document.querySelectorAll('.action-buttons .btn-danger').forEach(btn => {
-                    btn.disabled = true;
-                    btn.style.opacity = '0.5';
-                });
-            }
+            }, 10000);
         }
         
         // Report generation functions
@@ -483,7 +642,6 @@
         }
         
         function generateSalesReport() {
-            // This would integrate with the sales database in a full implementation
             const reportContent = document.getElementById('report-content');
             reportContent.innerHTML = `
                 <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #3498db;">
@@ -501,12 +659,12 @@
         }
         
         function generateSecurityReport() {
-            if (!window.checkPermission('canViewReports') || window.authSystem.getCurrentUser() !== 'admin') {
+            if (!window.checkPermission('canViewReports') || authSystem.getCurrentUser() !== 'admin') {
                 alert('Solo el administrador puede ver el log de seguridad');
                 return;
             }
             
-            const securityLog = window.authSystem.getSecurityLog(50);
+            const securityLog = authSystem.getSecurityLog(50);
             
             const reportContent = document.getElementById('report-content');
             reportContent.innerHTML = `
