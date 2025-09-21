@@ -8,17 +8,17 @@ class AuthenticationSystem {
         this.sessionTimeout = 30 * 60 * 1000; // 30 minutes
         this.maxAttempts = 3;
         this.lockoutTime = 15 * 60 * 1000; // 15 minutes
-        this.sessionKey = 'comercial_garcia_session';
-        this.attemptsKey = 'comercial_garcia_attempts';
-        this.lockoutKey = 'comercial_garcia_lockout';
+        this.sessionKey = 'stockpile_session';
+        this.attemptsKey = 'stockpile_attempts';
+        this.lockoutKey = 'stockpile_lockout';
         
         // Default credentials (in production, these should be hashed)
         this.credentials = {
-            // Default: admin / CG2024
-            admin: this.hashPassword('CG2024'),
+            // Default: admin / STOCK2024
+            admin: this.hashPassword('STOCK2024'),
             // Additional users can be added here
-            gerente: this.hashPassword('FERR2024'),
-            vendedor: this.hashPassword('VENTA2024')
+            manager: this.hashPassword('MANAGE2024'),
+            clerk: this.hashPassword('CLERK2024')
         };
         
         this.currentUser = null;
@@ -95,7 +95,7 @@ class AuthenticationSystem {
             const remainingTime = Math.ceil(this.getRemainingLockoutTime() / 1000 / 60);
             return {
                 success: false,
-                message: `Cuenta bloqueada. Intente nuevamente en ${remainingTime} minutos.`,
+                message: `Account locked. Try again in ${remainingTime} minutes.`,
                 isLockedOut: true
             };
         }
@@ -114,7 +114,7 @@ class AuthenticationSystem {
             
             return {
                 success: true,
-                message: 'Acceso autorizado',
+                message: 'Access granted',
                 user: username
             };
         } else {
@@ -131,7 +131,7 @@ class AuthenticationSystem {
                 
                 return {
                     success: false,
-                    message: `Demasiados intentos fallidos. Cuenta bloqueada por 15 minutos.`,
+                    message: `Too many failed attempts. Account locked for 15 minutes.`,
                     isLockedOut: true,
                     attempts: newAttempts
                 };
@@ -140,7 +140,7 @@ class AuthenticationSystem {
                 
                 return {
                     success: false,
-                    message: `Credenciales incorrectas. ${remainingAttempts} intentos restantes.`,
+                    message: `Invalid credentials. ${remainingAttempts} attempts remaining.`,
                     attempts: newAttempts,
                     remainingAttempts
                 };
@@ -299,7 +299,7 @@ class AuthenticationSystem {
         
         // Show login form again
         if (window.app && window.app.showLoginForm) {
-            const message = auto ? 'Sesión expirada. Por favor, inicie sesión nuevamente.' : null;
+            const message = auto ? 'Session expired. Please sign in again.' : null;
             window.app.showLoginForm(message);
         }
     }
@@ -344,7 +344,7 @@ class AuthenticationSystem {
                     permissions[key] = true;
                 });
                 break;
-            case 'gerente':
+            case 'manager':
                 // Manager has most permissions except delete
                 permissions.canAddProducts = true;
                 permissions.canEditProducts = true;
@@ -352,67 +352,14 @@ class AuthenticationSystem {
                 permissions.canExportData = true;
                 permissions.canImportData = true;
                 break;
-            case 'vendedor':
-                // Salesperson has limited permissions
+            case 'clerk':
+                // Store clerk has limited permissions
                 permissions.canProcessSales = true;
                 permissions.canViewReports = false;
                 break;
         }
 
         return permissions;
-    }
-
-    /**
-     * Change user password
-     * @param {string} oldPassword - Current password
-     * @param {string} newPassword - New password
-     * @returns {Object} Result of password change
-     */
-    changePassword(oldPassword, newPassword) {
-        if (!this.isAuthenticated) {
-            return { success: false, message: 'No autorizado' };
-        }
-
-        const oldHash = this.hashPassword(oldPassword);
-        if (this.credentials[this.currentUser] !== oldHash) {
-            return { success: false, message: 'Contraseña actual incorrecta' };
-        }
-
-        if (newPassword.length < 6) {
-            return { success: false, message: 'La nueva contraseña debe tener al menos 6 caracteres' };
-        }
-
-        this.credentials[this.currentUser] = this.hashPassword(newPassword);
-        
-        // In a real application, this would be saved to a secure backend
-        localStorage.setItem('comercial_garcia_credentials', JSON.stringify(this.credentials));
-        
-        return { success: true, message: 'Contraseña cambiada exitosamente' };
-    }
-
-    /**
-     * Add new user (admin only)
-     * @param {string} username - New username
-     * @param {string} password - Password for new user
-     * @returns {Object} Result of user creation
-     */
-    addUser(username, password) {
-        if (!this.isAuthenticated || this.currentUser !== 'admin') {
-            return { success: false, message: 'Solo el administrador puede agregar usuarios' };
-        }
-
-        if (this.credentials[username]) {
-            return { success: false, message: 'El usuario ya existe' };
-        }
-
-        if (password.length < 6) {
-            return { success: false, message: 'La contraseña debe tener al menos 6 caracteres' };
-        }
-
-        this.credentials[username] = this.hashPassword(password);
-        localStorage.setItem('comercial_garcia_credentials', JSON.stringify(this.credentials));
-        
-        return { success: true, message: `Usuario ${username} creado exitosamente` };
     }
 
     /**
@@ -462,7 +409,7 @@ class AuthenticationSystem {
         };
 
         // Store security log in localStorage (in production, send to secure backend)
-        const logKey = 'comercial_garcia_security_log';
+        const logKey = 'stockpile_security_log';
         const existingLog = JSON.parse(localStorage.getItem(logKey) || '[]');
         existingLog.push(logEntry);
         
@@ -485,57 +432,9 @@ class AuthenticationSystem {
             return [];
         }
 
-        const logKey = 'comercial_garcia_security_log';
+        const logKey = 'stockpile_security_log';
         const log = JSON.parse(localStorage.getItem(logKey) || '[]');
         return log.slice(-limit).reverse();
-    }
-
-    /**
-     * Initialize credentials from localStorage if available
-     */
-    loadStoredCredentials() {
-        const stored = localStorage.getItem('comercial_garcia_credentials');
-        if (stored) {
-            try {
-                const parsedCredentials = JSON.parse(stored);
-                this.credentials = { ...this.credentials, ...parsedCredentials };
-            } catch (error) {
-                console.error('Error loading stored credentials:', error);
-            }
-        }
-    }
-
-    /**
-     * Cleanup expired sessions and security logs
-     */
-    cleanup() {
-        // Remove expired sessions
-        const sessionData = localStorage.getItem(this.sessionKey);
-        if (sessionData) {
-            try {
-                const session = JSON.parse(sessionData);
-                const now = Date.now();
-                if (now - session.lastActivity >= this.sessionTimeout) {
-                    localStorage.removeItem(this.sessionKey);
-                }
-            } catch (error) {
-                localStorage.removeItem(this.sessionKey);
-            }
-        }
-
-        // Clean old security logs (keep only last 30 days)
-        const logKey = 'comercial_garcia_security_log';
-        const log = JSON.parse(localStorage.getItem(logKey) || '[]');
-        const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-        
-        const filteredLog = log.filter(entry => {
-            const entryTime = new Date(entry.timestamp).getTime();
-            return entryTime > thirtyDaysAgo;
-        });
-        
-        if (filteredLog.length !== log.length) {
-            localStorage.setItem(logKey, JSON.stringify(filteredLog));
-        }
     }
 
     /**
@@ -543,248 +442,6 @@ class AuthenticationSystem {
      */
     destroy() {
         this.logout();
-        this.cleanup();
         console.log('Authentication system destroyed');
-    }
-}
-
-/**
- * Enhanced ComercialGarciaApp with Authentication
- */
-class SecureComercialGarciaApp extends ComercialGarciaApp {
-    constructor() {
-        super();
-        this.authSystem = new AuthenticationSystem();
-        this.loginOverlay = null;
-    }
-
-    /**
-     * Initialize the secure application
-     */
-    async init() {
-        try {
-            console.log('🔐 Inicializando Sistema Seguro...');
-            
-            // Load stored credentials
-            this.authSystem.loadStoredCredentials();
-            
-            // Check authentication first
-            if (!this.authSystem.isUserAuthenticated()) {
-                this.showLoginForm();
-                return;
-            }
-
-            // Proceed with normal initialization
-            await super.init();
-            
-            // Log successful login
-            this.authSystem.logSecurityEvent('SYSTEM_ACCESS', {
-                user: this.authSystem.getCurrentUser()
-            });
-            
-        } catch (error) {
-            console.error('❌ Error inicializando la aplicación segura:', error);
-            this.showError('Error inicializando la aplicación: ' + error.message);
-        }
-    }
-
-    /**
-     * Show login form
-     * @param {string} message - Optional message to display
-     */
-    showLoginForm(message = null) {
-        // Remove existing overlay if present
-        if (this.loginOverlay) {
-            this.loginOverlay.remove();
-        }
-
-        // Create login overlay
-        this.loginOverlay = document.createElement('div');
-        this.loginOverlay.className = 'login-overlay';
-        
-        const lockoutInfo = this.authSystem.isLockedOut() ? 
-            `<div class="login-attempts">Cuenta bloqueada por ${Math.ceil(this.authSystem.getRemainingLockoutTime() / 1000 / 60)} minutos</div>` : '';
-        
-        this.loginOverlay.innerHTML = `
-            <div class="login-form">
-                <h2>🔐 Acceso al Sistema</h2>
-                <p style="color: #7f8c8d; margin-bottom: 30px;">Comercial García - Sistema de Inventario</p>
-                ${message ? `<div class="alert alert-warning" style="margin-bottom: 20px;">${message}</div>` : ''}
-                ${lockoutInfo}
-                <form id="login-form">
-                    <div class="form-group">
-                        <label for="username">Usuario</label>
-                        <input type="text" id="username" required ${this.authSystem.isLockedOut() ? 'disabled' : ''}>
-                    </div>
-                    <div class="form-group">
-                        <label for="password">Contraseña</label>
-                        <input type="password" id="password" required ${this.authSystem.isLockedOut() ? 'disabled' : ''}>
-                    </div>
-                    <button type="submit" class="btn" ${this.authSystem.isLockedOut() ? 'disabled' : ''}>
-                        Iniciar Sesión
-                    </button>
-                </form>
-                <div id="login-message" class="login-attempts"></div>
-                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ecf0f1; font-size: 12px; color: #7f8c8d;">
-                    <strong>Usuarios por defecto:</strong><br>
-                    admin / CG2024 (Administrador)<br>
-                    gerente / FERR2024 (Gerente)<br>
-                    vendedor / VENTA2024 (Vendedor)
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(this.loginOverlay);
-
-        // Setup login form handler
-        const loginForm = document.getElementById('login-form');
-        loginForm.addEventListener('submit', (e) => this.handleLogin(e));
-
-        // Focus username field
-        setTimeout(() => {
-            const usernameField = document.getElementById('username');
-            if (usernameField && !this.authSystem.isLockedOut()) {
-                usernameField.focus();
-            }
-        }, 100);
-
-        // Update lockout timer if locked out
-        if (this.authSystem.isLockedOut()) {
-            this.updateLockoutTimer();
-        }
-    }
-
-    /**
-     * Handle login form submission
-     * @param {Event} e - Form submit event
-     */
-    async handleLogin(e) {
-        e.preventDefault();
-        
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
-        const messageDiv = document.getElementById('login-message');
-
-        if (!username || !password) {
-            messageDiv.textContent = 'Por favor, complete todos los campos';
-            messageDiv.style.color = '#e74c3c';
-            return;
-        }
-
-        // Attempt authentication
-        const result = this.authSystem.authenticate(username, password);
-        
-        if (result.success) {
-            // Log successful login
-            this.authSystem.logSecurityEvent('LOGIN_SUCCESS', {
-                user: username,
-                timestamp: new Date().toISOString()
-            });
-
-            messageDiv.textContent = 'Acceso autorizado...';
-            messageDiv.style.color = '#27ae60';
-            
-            // Remove login overlay
-            setTimeout(() => {
-                if (this.loginOverlay) {
-                    this.loginOverlay.remove();
-                    this.loginOverlay = null;
-                }
-                // Initialize the main application
-                super.init();
-            }, 1000);
-            
-        } else {
-            // Log failed login
-            this.authSystem.logSecurityEvent('LOGIN_FAILED', {
-                username,
-                reason: result.message,
-                attempts: result.attempts || 0
-            });
-
-            messageDiv.textContent = result.message;
-            messageDiv.style.color = '#e74c3c';
-            
-            if (result.isLockedOut) {
-                // Disable form and start lockout timer
-                document.getElementById('username').disabled = true;
-                document.getElementById('password').disabled = true;
-                document.querySelector('.btn').disabled = true;
-                this.updateLockoutTimer();
-            }
-            
-            // Clear password field
-            document.getElementById('password').value = '';
-        }
-    }
-
-    /**
-     * Update lockout timer display
-     */
-    updateLockoutTimer() {
-        const messageDiv = document.getElementById('login-message');
-        
-        const updateTimer = () => {
-            const remaining = this.authSystem.getRemainingLockoutTime();
-            if (remaining > 0) {
-                const minutes = Math.ceil(remaining / 1000 / 60);
-                messageDiv.textContent = `Cuenta bloqueada. Tiempo restante: ${minutes} minutos`;
-                messageDiv.style.color = '#e74c3c';
-                setTimeout(updateTimer, 1000);
-            } else {
-                // Lockout expired, re-enable form
-                document.getElementById('username').disabled = false;
-                document.getElementById('password').disabled = false;
-                document.querySelector('.btn').disabled = false;
-                messageDiv.textContent = 'Puede intentar nuevamente';
-                messageDiv.style.color = '#27ae60';
-            }
-        };
-        
-        updateTimer();
-    }
-
-    /**
-     * Enhanced setup with authentication checks
-     */
-    setupGlobalFunctions() {
-        super.setupGlobalFunctions();
-        
-        // Add authentication-aware functions
-        window.authSystem = this.authSystem;
-        
-        // Add logout function
-        window.logout = () => {
-            if (confirm('¿Está seguro de que desea cerrar sesión?')) {
-                this.authSystem.logSecurityEvent('LOGOUT', {
-                    user: this.authSystem.getCurrentUser()
-                });
-                this.authSystem.logout();
-            }
-        };
-        
-        // Add session info function
-        window.getSessionInfo = () => {
-            return this.authSystem.getSessionInfo();
-        };
-        
-        // Add permission check function
-        window.checkPermission = (permission) => {
-            const permissions = this.authSystem.getUserPermissions();
-            return permissions[permission] || false;
-        };
-    }
-
-    /**
-     * Enhanced destroy with cleanup
-     */
-    destroy() {
-        if (this.authSystem) {
-            this.authSystem.destroy();
-        }
-        if (this.loginOverlay) {
-            this.loginOverlay.remove();
-        }
-        super.destroy();
     }
 }

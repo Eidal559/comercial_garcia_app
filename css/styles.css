@@ -44,7 +44,7 @@ body {
     text-align: center;
     margin-bottom: 40px;
     background: linear-gradient(135deg, var(--primary-orange), var(--primary-dark-orange));
-    color: white;
+    color: rgb(5, 5, 5);
     padding: 25px;
     border-radius: 15px;
     margin: -30px -30px 40px -30px;
@@ -93,7 +93,7 @@ body {
 
 .nav-btn {
     background: linear-gradient(45deg, var(--secondary-blue), var(--secondary-dark-blue));
-    color: white;
+    color: rgb(255, 255, 255);
     border: none;
     padding: 15px 25px;
     font-size: 16px;
@@ -134,7 +134,7 @@ body {
 .section {
     display: none;
     animation: fadeIn 0.5s ease-in;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(250, 250, 250, 0.9);
     padding: 25px;
     border-radius: 15px;
     border: 2px solid var(--light-gray);
@@ -240,7 +240,7 @@ body {
     border: 3px solid var(--primary-orange);
     border-radius: 25px;
     margin-bottom: 20px;
-    background: white;
+    background: rgb(245, 244, 244);
     transition: all 0.3s ease;
 }
 
@@ -682,4 +682,56 @@ button:focus {
     max-width: 400px;
     margin-left: auto;
     margin-right: auto;
+}
+
+.header #user-info {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 14px;
+    background: rgba(0, 0, 0, 0.7); /* Dark semi-transparent background */
+    padding: 8px 12px;
+    border-radius: 8px;
+    color: white !important; /* Ensure white text */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.header #user-info #current-user {
+    color: white !important;
+    font-weight: 500;
+}
+
+.header #user-info button {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 8px;
+    transition: all 0.3s ease;
+}
+
+.header #user-info button:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    transform: translateY(-1px);
+}
+
+/* Alternative style - if you prefer a solid background */
+.header #user-info.solid-bg {
+    background: #2c3e50;
+    color: white;
+    border: 1px solid #34495e;
+}
+
+.header #user-info.solid-bg button {
+    background: #e67e22 !important;
+    border: 1px solid #d35400 !important;
+    color: white !important;
+}
+
+.header #user-info.solid-bg button:hover {
+    background: #d35400 !important;
 }

@@ -23,6 +23,10 @@ class UIController {
         this.setupEventListeners();
         this.setupInventoryEventHandlers();
         this.setupKeyboardShortcuts();
+        
+        // Show dashboard by default
+        this.showSection('dashboard');
+        
         console.log('UI Controller initialized');
     }
 
@@ -70,15 +74,32 @@ class UIController {
      * Setup event listeners for forms and interactions
      */
     setupEventListeners() {
-        // Navigation
-        document.querySelectorAll('.nav-btn').forEach(btn => {
+        // Navigation - Updated to work properly
+        this.elements.navButtons.forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const sectionId = e.target.textContent.includes('Panel') ? 'dashboard' :
-                                e.target.textContent.includes('Agregar') ? 'add-product' :
-                                e.target.textContent.includes('Ver') ? 'inventory' :
-                                e.target.textContent.includes('Vender') ? 'sell' :
-                                e.target.textContent.includes('Reabastecer') ? 'restock' :
-                                e.target.textContent.includes('Código') ? 'barcode' : 'dashboard';
+                e.preventDefault();
+                
+                // Determine section from button onclick attribute or text content
+                let sectionId = 'dashboard';
+                const onclickAttr = btn.getAttribute('onclick');
+                
+                if (onclickAttr) {
+                    const match = onclickAttr.match(/showSection\('([^']+)'\)/);
+                    if (match) {
+                        sectionId = match[1];
+                    }
+                } else {
+                    // Fallback - determine from text content
+                    const text = btn.textContent.toLowerCase();
+                    if (text.includes('dashboard')) sectionId = 'dashboard';
+                    else if (text.includes('add')) sectionId = 'add-product';
+                    else if (text.includes('view') || text.includes('inventory')) sectionId = 'inventory';
+                    else if (text.includes('sell')) sectionId = 'sell';
+                    else if (text.includes('restock')) sectionId = 'restock';
+                    else if (text.includes('barcode') || text.includes('scanner')) sectionId = 'barcode';
+                    else if (text.includes('reports')) sectionId = 'reports';
+                }
+                
                 this.showSection(sectionId);
             });
         });
@@ -121,6 +142,67 @@ class UIController {
     }
 
     /**
+     * Show a specific section
+     * @param {string} sectionId - Section to show
+     */
+    showSection(sectionId) {
+        console.log('Switching to section:', sectionId);
+        
+        // Hide all sections
+        this.elements.sections.forEach(section => {
+            section.classList.remove('active');
+            section.style.display = 'none'; // Ensure it's hidden
+        });
+        
+        // Remove active class from all nav buttons
+        this.elements.navButtons.forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Show selected section
+        const section = document.getElementById(sectionId);
+        if (section) {
+            section.classList.add('active');
+            section.style.display = 'block'; // Ensure it's visible
+            console.log('Section shown:', sectionId);
+        } else {
+            console.error('Section not found:', sectionId);
+            return;
+        }
+        
+        // Set active nav button
+        const activeBtn = Array.from(this.elements.navButtons).find(btn => {
+            const onclickAttr = btn.getAttribute('onclick');
+            if (onclickAttr) {
+                return onclickAttr.includes(`'${sectionId}'`);
+            }
+            
+            // Fallback text matching
+            const text = btn.textContent.toLowerCase();
+            return (sectionId === 'dashboard' && text.includes('dashboard')) ||
+                   (sectionId === 'add-product' && text.includes('add')) ||
+                   (sectionId === 'inventory' && (text.includes('view') || text.includes('inventory'))) ||
+                   (sectionId === 'sell' && text.includes('sell')) ||
+                   (sectionId === 'restock' && text.includes('restock')) ||
+                   (sectionId === 'barcode' && (text.includes('barcode') || text.includes('scanner'))) ||
+                   (sectionId === 'reports' && text.includes('reports'));
+        });
+        
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+        
+        this.currentSection = sectionId;
+        
+        // Update content based on section
+        if (sectionId === 'dashboard') {
+            this.updateDashboard();
+        } else if (sectionId === 'inventory') {
+            this.displayInventory();
+        }
+    }
+
+    /**
      * Setup inventory event handlers
      */
     setupInventoryEventHandlers() {
@@ -133,7 +215,7 @@ class UIController {
         this.inventoryManager.on('productAdded', () => {
             this.updateDashboard();
             this.updateCategoryFilter();
-            this.showAlert('Producto agregado exitosamente!', 'success');
+            this.showAlert('Product added successfully!', 'success');
         });
 
         this.inventoryManager.on('productUpdated', () => {
@@ -145,14 +227,14 @@ class UIController {
             this.updateDashboard();
             this.displayInventory();
             this.updateCategoryFilter();
-            this.showAlert('Producto eliminado exitosamente!', 'success');
+            this.showAlert('Product deleted successfully!', 'success');
         });
 
         this.inventoryManager.on('saleProcessed', (data) => {
             this.updateDashboard();
             this.displayInventory();
             this.showAlert(
-                `Venta completada! ${data.sale.quantity} x ${data.sale.name} - Total: $${data.sale.total.toFixed(2)}`, 
+                `Sale completed! ${data.sale.quantity} x ${data.sale.name} - Total: $${data.sale.total.toFixed(2)}`, 
                 'success'
             );
         });
@@ -161,7 +243,7 @@ class UIController {
             this.updateDashboard();
             this.displayInventory();
             this.showAlert(
-                `Reabastecido exitosamente! Agregado ${data.quantity} x ${data.product.name}`, 
+                `Restocked successfully! Added ${data.quantity} x ${data.product.name}`, 
                 'success'
             );
         });
@@ -169,9 +251,9 @@ class UIController {
         this.inventoryManager.on('stockAdjusted', (data) => {
             this.updateDashboard();
             this.displayInventory();
-            const action = data.adjustment > 0 ? 'Agregado' : 'Removido';
+            const action = data.adjustment > 0 ? 'Added' : 'Removed';
             this.showAlert(
-                `${action} ${Math.abs(data.adjustment)} de ${data.product.name}`, 
+                `${action} ${Math.abs(data.adjustment)} of ${data.product.name}`, 
                 'success'
             );
         });
@@ -201,52 +283,6 @@ class UIController {
     }
 
     /**
-     * Show a specific section
-     * @param {string} sectionId - Section to show
-     */
-    showSection(sectionId) {
-        // Hide all sections
-        this.elements.sections.forEach(section => {
-            section.classList.remove('active');
-        });
-        
-        // Remove active class from all nav buttons
-        this.elements.navButtons.forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        // Show selected section
-        const section = document.getElementById(sectionId);
-        if (section) {
-            section.classList.add('active');
-        }
-        
-        // Set active nav button
-        const activeBtn = Array.from(this.elements.navButtons).find(btn => {
-            const text = btn.textContent.toLowerCase();
-            return (sectionId === 'dashboard' && text.includes('panel')) ||
-                   (sectionId === 'add-product' && text.includes('agregar')) ||
-                   (sectionId === 'inventory' && text.includes('ver')) ||
-                   (sectionId === 'sell' && text.includes('vender')) ||
-                   (sectionId === 'restock' && text.includes('reabastecer')) ||
-                   (sectionId === 'barcode' && text.includes('código'));
-        });
-        
-        if (activeBtn) {
-            activeBtn.classList.add('active');
-        }
-        
-        this.currentSection = sectionId;
-        
-        // Update content based on section
-        if (sectionId === 'dashboard') {
-            this.updateDashboard();
-        } else if (sectionId === 'inventory') {
-            this.displayInventory();
-        }
-    }
-
-    /**
      * Handle add product form submission
      * @param {Event} e - Form submit event
      */
@@ -254,9 +290,8 @@ class UIController {
         e.preventDefault();
         
         try {
-            const formData = new FormData(e.target);
             const productData = {
-                sku: formData.get('sku') || document.getElementById('sku').value,
+                sku: document.getElementById('sku').value,
                 name: document.getElementById('name').value,
                 category: document.getElementById('category').value,
                 price: document.getElementById('price').value,
@@ -292,7 +327,9 @@ class UIController {
             
             // Reset form
             e.target.reset();
-            this.elements.productInfo.style.display = 'none';
+            if (this.elements.productInfo) {
+                this.elements.productInfo.style.display = 'none';
+            }
             
         } catch (error) {
             this.showAlert(error.message, 'danger');
@@ -314,7 +351,9 @@ class UIController {
             
             // Reset form
             e.target.reset();
-            this.elements.restockProductInfo.style.display = 'none';
+            if (this.elements.restockProductInfo) {
+                this.elements.restockProductInfo.style.display = 'none';
+            }
             
         } catch (error) {
             this.showAlert(error.message, 'danger');
@@ -348,15 +387,15 @@ class UIController {
             if (stats.lowStockCount > 0) {
                 this.elements.lowStockAlerts.innerHTML = `
                     <div class="alert alert-warning">
-                        <strong>⚠️ Alerta de Stock Bajo!</strong><br>
+                        <strong>⚠️ Low Stock Alert!</strong><br>
                         ${stats.lowStockProducts.map(item => 
-                            `${item.name} (${item.sku}): ${item.quantity} restantes`
+                            `${item.name} (${item.sku}): ${item.quantity} remaining`
                         ).join('<br>')}
                     </div>
                 `;
             } else {
                 this.elements.lowStockAlerts.innerHTML = 
-                    '<div class="alert alert-success"><strong>✅ Todos los productos tienen buen stock!</strong></div>';
+                    '<div class="alert alert-success"><strong>✅ All products have good stock!</strong></div>';
             }
         }
     }
@@ -381,8 +420,8 @@ class UIController {
                 <td>${item.sku}</td>
                 <td>
                     ${item.name}
-                    ${item.barcode ? '<br><small style="color: #7f8c8d;">CB: ' + item.barcode + '</small>' : ''}
-                    ${item.supplier ? '<br><small style="color: #7f8c8d;">Prov: ' + item.supplier + '</small>' : ''}
+                    ${item.barcode ? '<br><small style="color: #7f8c8d;">BC: ' + item.barcode + '</small>' : ''}
+                    ${item.supplier ? '<br><small style="color: #7f8c8d;">Supplier: ' + item.supplier + '</small>' : ''}
                 </td>
                 <td>${item.category}</td>
                 <td>$${item.price.toFixed(2)}</td>
@@ -390,9 +429,9 @@ class UIController {
                 <td>${item.minStock}</td>
                 <td>$${(item.price * item.quantity).toFixed(2)}</td>
                 <td class="action-buttons">
-                    <button class="btn btn-warning" onclick="window.uiController.quickAdjust(${item.id}, 'add')" title="Agregar stock">+</button>
-                    <button class="btn btn-warning" onclick="window.uiController.quickAdjust(${item.id}, 'subtract')" title="Quitar stock">-</button>
-                    <button class="btn btn-danger" onclick="window.uiController.deleteProduct(${item.id})" title="Eliminar producto">🗑️</button>
+                    <button class="btn btn-warning" onclick="window.uiController.quickAdjust(${item.id}, 'add')" title="Add stock">+</button>
+                    <button class="btn btn-warning" onclick="window.uiController.quickAdjust(${item.id}, 'subtract')" title="Remove stock">-</button>
+                    <button class="btn btn-danger" onclick="window.uiController.deleteProduct(${item.id})" title="Delete product">🗑️</button>
                 </td>
             `;
             this.elements.inventoryBody.appendChild(row);
@@ -417,7 +456,7 @@ class UIController {
         if (!this.elements.categoryFilter) return;
         
         const stats = this.inventoryManager.getStatistics();
-        this.elements.categoryFilter.innerHTML = '<option value="">Todas las Categorías</option>';
+        this.elements.categoryFilter.innerHTML = '<option value="">All Categories</option>';
         
         stats.categories.forEach(category => {
             const option = document.createElement('option');
@@ -452,9 +491,9 @@ class UIController {
             if (matches.length > 0) {
                 suggestions.innerHTML = matches.map(item => 
                     `<div style="padding: 10px; cursor: pointer; border-bottom: 1px solid #eee;" 
-                     onclick="window.uiController.selectProduct('${item.sku}', '${inputId}', '${suggestionsId}', ${callback.name})">
+                     onclick="window.uiController.selectProduct('${item.sku}', '${inputId}', '${suggestionsId}', '${callback.name}')">
                         ${item.sku} - ${item.name} 
-                        ${item.barcode ? '(CB: ' + item.barcode + ')' : ''} 
+                        ${item.barcode ? '(BC: ' + item.barcode + ')' : ''} 
                         (Stock: ${item.stock})
                      </div>`
                 ).join('');
@@ -502,11 +541,11 @@ class UIController {
                 this.elements.productInfo.style.display = 'block';
                 this.elements.productDetails.innerHTML = `
                     <strong>${product.name}</strong><br>
-                    Categoría: ${product.category}<br>
-                    Precio: $${product.price.toFixed(2)}<br>
-                    Stock Actual: ${product.quantity}
-                    ${product.barcode ? '<br>Código de Barras: ' + product.barcode : ''}
-                    ${product.supplier ? '<br>Proveedor: ' + product.supplier : ''}
+                    Category: ${product.category}<br>
+                    Price: $${product.price.toFixed(2)}<br>
+                    Current Stock: ${product.quantity}
+                    ${product.barcode ? '<br>Barcode: ' + product.barcode : ''}
+                    ${product.supplier ? '<br>Supplier: ' + product.supplier : ''}
                 `;
             }
         } catch (error) {
@@ -525,11 +564,11 @@ class UIController {
                 this.elements.restockProductInfo.style.display = 'block';
                 this.elements.restockProductDetails.innerHTML = `
                     <strong>${product.name}</strong><br>
-                    Categoría: ${product.category}<br>
-                    Precio: $${product.price.toFixed(2)}<br>
-                    Stock Actual: ${product.quantity}
-                    ${product.barcode ? '<br>Código de Barras: ' + product.barcode : ''}
-                    ${product.supplier ? '<br>Proveedor: ' + product.supplier : ''}
+                    Category: ${product.category}<br>
+                    Price: $${product.price.toFixed(2)}<br>
+                    Current Stock: ${product.quantity}
+                    ${product.barcode ? '<br>Barcode: ' + product.barcode : ''}
+                    ${product.supplier ? '<br>Supplier: ' + product.supplier : ''}
                 `;
             }
         } catch (error) {
@@ -543,8 +582,8 @@ class UIController {
      * @param {string} action - 'add' or 'subtract'
      */
     async quickAdjust(productId, action) {
-        const actionText = action === 'add' ? 'agregar' : 'quitar';
-        const adjustment = prompt(`Ingrese cantidad a ${actionText}:`);
+        const actionText = action === 'add' ? 'add' : 'remove';
+        const adjustment = prompt(`Enter quantity to ${actionText}:`);
         const quantity = parseInt(adjustment);
         
         if (isNaN(quantity) || quantity <= 0) return;
@@ -562,7 +601,7 @@ class UIController {
      * @param {number} productId - Product ID
      */
     async deleteProduct(productId) {
-        if (confirm('¿Está seguro de que desea eliminar este producto?')) {
+        if (confirm('Are you sure you want to delete this product?')) {
             try {
                 await this.inventoryManager.deleteProduct(productId);
             } catch (error) {
@@ -583,9 +622,9 @@ class UIController {
             const text = await file.text();
             const data = JSON.parse(text);
             await this.inventoryManager.importData(data);
-            this.showAlert('Datos importados exitosamente!', 'success');
+            this.showAlert('Data imported successfully!', 'success');
         } catch (error) {
-            this.showAlert('Error importando datos: ' + error.message, 'danger');
+            this.showAlert('Import error: ' + error.message, 'danger');
         }
     }
 
@@ -599,12 +638,12 @@ class UIController {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `comercial-garcia-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `stockpile-backup-${new Date().toISOString().split('T')[0]}.json`;
             a.click();
             URL.revokeObjectURL(url);
-            this.showAlert('Respaldo exportado exitosamente!', 'success');
+            this.showAlert('Backup exported successfully!', 'success');
         } catch (error) {
-            this.showAlert('Error exportando datos: ' + error.message, 'danger');
+            this.showAlert('Export error: ' + error.message, 'danger');
         }
     }
 
@@ -614,6 +653,8 @@ class UIController {
      * @param {string} type - Alert type (success, warning, danger)
      */
     showAlert(message, type = 'success') {
+        if (!this.elements.alerts) return;
+        
         const alert = document.createElement('div');
         alert.className = `alert alert-${type}`;
         alert.textContent = message;
@@ -621,7 +662,9 @@ class UIController {
         this.elements.alerts.appendChild(alert);
         
         setTimeout(() => {
-            alert.remove();
+            if (alert.parentElement) {
+                alert.remove();
+            }
         }, 5000);
     }
 

@@ -1,10 +1,10 @@
 /**
  * Database Management using IndexedDB for local storage
- * Handles all database operations for Comercial García inventory system
+ * Handles all database operations for Stockpile inventory system
  */
 class InventoryDB {
     constructor() {
-        this.dbName = 'ComercialGarciaDB';
+        this.dbName = 'StockpileDB';
         this.dbVersion = 1;
         this.db = null;
     }
@@ -264,6 +264,7 @@ class InventoryDB {
         return {
             version: this.dbVersion,
             exportDate: new Date().toISOString(),
+            system: 'Stockpile',
             products: products,
             sales: sales,
             metadata: {

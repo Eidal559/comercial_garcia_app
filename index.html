@@ -1,77 +1,70 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔧 Comercial García - Sistema de Inventario</title>
+    <title>📦 Stockpile - Inventory Management System</title>
+    
+    <!-- CSS Files -->
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/user-interface.css">
+    
+    <!-- External Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🔧</text></svg>">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>📦</text></svg>">
 </head>
 <body>
-    <!-- Login Overlay (will be shown first) -->
+    <!-- Login Screen -->
     <div id="login-overlay" class="login-overlay" style="display: block;">
         <div class="login-form">
-            <h2>🔐 Acceso al Sistema</h2>
-            <p style="color: #7f8c8d; margin-bottom: 30px;">Comercial García - Sistema de Inventario</p>
+            <h2>🔐 System Access</h2>
+            <p>Stockpile - Inventory Management System</p>
             <form id="login-form">
                 <div class="form-group">
-                    <label for="username">Usuario</label>
+                    <label for="username">Username</label>
                     <input type="text" id="username" required>
                 </div>
                 <div class="form-group">
-                    <label for="password">Contraseña</label>
+                    <label for="password">Password</label>
                     <input type="password" id="password" required>
                 </div>
-                <button type="submit" class="btn">
-                    Iniciar Sesión
-                </button>
+                <button type="submit" class="btn">Sign In</button>
             </form>
             <div id="login-message" class="login-attempts"></div>
-            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ecf0f1; font-size: 12px; color: #7f8c8d;">
-                <strong>Usuarios por defecto:</strong><br>
-                admin / CG2024 (Administrador)<br>
-                gerente / FERR2024 (Gerente)<br>
-                vendedor / VENTA2024 (Vendedor)
+            <div class="default-users">
+                <strong>Default Users:</strong><br>
+                admin / STOCK2024 (Administrator)<br>
+                manager / MANAGE2024 (Manager)<br>
+                clerk / CLERK2024 (Store Clerk)
             </div>
         </div>
     </div>
 
-    <!-- Main Application (will be shown after login) -->
+    <!-- Main Application -->
     <div id="main-app" class="container" style="display: none;">
+        
+        <!-- Header -->
         <div class="header hardware-tools-bg">
-            <h1>🔧 Comercial García</h1>
-            <p>Sistema de Inventario Ferretero - Robusto, Confiable, Seguro</p>
-            <div id="user-info" style="position: absolute; top: 15px; right: 15px; color: white; font-size: 14px;">
-                <span id="current-user"></span> | 
-                <button onclick="logout()" style="background: none; border: 1px solid white; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
-                    🚪 Salir
-                </button>
+            <h1>📦 Stockpile</h1>
+            <p>Inventory Management System - Reliable, Secure, Professional</p>
+            <div id="user-info">
+                <span id="current-user"></span>
+                <span class="separator">|</span>
+                <button id="logout-btn">🚪 Logout</button>
             </div>
         </div>
 
+        <!-- Navigation -->
         <div class="nav-buttons">
-            <button class="nav-btn active" onclick="showSection('dashboard')" data-permission="canViewInventory">
-                📊 Panel Principal
-            </button>
-            <button class="nav-btn" onclick="showSection('add-product')" data-permission="canAddProducts">
-                ➕ Agregar Producto
-            </button>
-            <button class="nav-btn" onclick="showSection('inventory')" data-permission="canViewInventory">
-                📦 Ver Inventario
-            </button>
-            <button class="nav-btn" onclick="showSection('sell')" data-permission="canProcessSales">
-                💰 Vender
-            </button>
-            <button class="nav-btn" onclick="showSection('restock')" data-permission="canRestock">
-                📈 Reabastecer
-            </button>
-            <button class="nav-btn" onclick="showSection('barcode')" data-permission="canViewInventory">
-                📱 Código de Barras
-            </button>
-            <button class="nav-btn" onclick="showSection('reports')" data-permission="canViewReports">
-                📋 Reportes
-            </button>
+            <button class="nav-btn active" data-section="dashboard">📊 Dashboard</button>
+            <button class="nav-btn" data-section="add-product">➕ Add Product</button>
+            <button class="nav-btn" data-section="inventory">📦 View Inventory</button>
+            <button class="nav-btn" data-section="sell">💰 Sell</button>
+            <button class="nav-btn" data-section="restock">📈 Restock</button>
+            <button class="nav-btn" data-section="barcode">📱 Barcode Scanner</button>
+            <button class="nav-btn" data-section="reports">📋 Reports</button>
         </div>
 
         <!-- Dashboard Section -->
@@ -79,267 +72,260 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number" id="total-products">0</div>
-                    <div class="stat-label">Total Productos</div>
+                    <div class="stat-label">Total Products</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="low-stock-count">0</div>
-                    <div class="stat-label">Stock Bajo</div>
+                    <div class="stat-label">Low Stock</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="total-value">$0</div>
-                    <div class="stat-label">Valor Total Inventario</div>
+                    <div class="stat-label">Total Inventory Value</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="categories-count">0</div>
-                    <div class="stat-label">Categorías</div>
+                    <div class="stat-label">Categories</div>
                 </div>
             </div>
-            
             <div id="low-stock-alerts"></div>
-            
-            <div id="session-info" style="margin-top: 20px; padding: 15px; background: rgba(52, 152, 219, 0.1); border-radius: 10px; border-left: 4px solid #3498db;">
-                <h4 style="margin-bottom: 10px; color: #2c3e50;">🔐 Información de Sesión</h4>
+            <div id="session-info">
+                <h4>🔐 Session Information</h4>
                 <div id="session-details"></div>
             </div>
         </div>
 
         <!-- Add Product Section -->
         <div id="add-product" class="section">
-            <h2 style="margin-bottom: 20px; color: #2c3e50;">🔨 Agregar Nuevo Producto</h2>
+            <h2>🔨 Add New Product</h2>
             <form id="add-product-form">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="sku">🏷️ SKU (Código de Producto)</label>
-                        <input type="text" id="sku" required placeholder="Ej: TOR001">
+                        <label for="sku">🏷️ SKU (Product Code)</label>
+                        <input type="text" id="sku" required placeholder="e.g., BOLT001">
                     </div>
                     <div class="form-group">
-                        <label for="barcode">📱 Código de Barras</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="barcode" placeholder="Opcional">
-                            <button type="button" class="btn" onclick="scanBarcodeForAdd()">📱 Escanear</button>
+                        <label for="barcode">📱 Barcode</label>
+                        <div class="input-with-button">
+                            <input type="text" id="barcode" placeholder="Optional">
+                            <button type="button" class="btn" id="scan-barcode-add">📱 Scan</button>
                         </div>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="name">📝 Nombre del Producto</label>
-                        <input type="text" id="name" required placeholder="Ej: Tornillo Phillips 2 pulgadas">
+                        <label for="name">📝 Product Name</label>
+                        <input type="text" id="name" required placeholder="e.g., Phillips Head Screws 2 inch">
                     </div>
                     <div class="form-group">
-                        <label for="category">🗂️ Categoría</label>
+                        <label for="category">🗂️ Category</label>
                         <select id="category" required>
-                            <option value="">Seleccionar Categoría</option>
-                            <option value="Tornillos y Pernos">🔩 Tornillos y Pernos</option>
-                            <option value="Herramientas Manuales">🔨 Herramientas Manuales</option>
-                            <option value="Herramientas Eléctricas">⚡ Herramientas Eléctricas</option>
-                            <option value="Pinturas y Barnices">🎨 Pinturas y Barnices</option>
-                            <option value="Ferretería General">🔧 Ferretería General</option>
-                            <option value="Material Eléctrico">💡 Material Eléctrico</option>
-                            <option value="Plomería">🔧 Plomería</option>
-                            <option value="Jardín y Exterior">🌱 Jardín y Exterior</option>
-                            <option value="Seguridad">🛡️ Seguridad</option>
-                            <option value="Adhesivos">🧪 Adhesivos</option>
-                            <option value="Maderas y Tableros">🪵 Maderas y Tableros</option>
-                            <option value="Otros">📦 Otros</option>
+                            <option value="">Select Category</option>
+                            <option value="Screws and Bolts">🔩 Screws and Bolts</option>
+                            <option value="Hand Tools">🔨 Hand Tools</option>
+                            <option value="Power Tools">⚡ Power Tools</option>
+                            <option value="Paint and Finishes">🎨 Paint and Finishes</option>
+                            <option value="General Hardware">🔧 General Hardware</option>
+                            <option value="Electrical">💡 Electrical</option>
+                            <option value="Plumbing">🔧 Plumbing</option>
+                            <option value="Garden and Outdoor">🌱 Garden and Outdoor</option>
+                            <option value="Safety">🛡️ Safety</option>
+                            <option value="Adhesives">🧪 Adhesives</option>
+                            <option value="Lumber and Boards">🪵 Lumber and Boards</option>
+                            <option value="Other">📦 Other</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="price">💰 Precio ($)</label>
+                        <label for="price">💰 Price ($)</label>
                         <input type="number" id="price" step="0.01" min="0" required placeholder="0.00">
                     </div>
                     <div class="form-group">
-                        <label for="quantity">📦 Cantidad Inicial</label>
+                        <label for="quantity">📦 Initial Quantity</label>
                         <input type="number" id="quantity" min="0" required placeholder="0">
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="min-stock">⚠️ Alerta Stock Mínimo</label>
+                        <label for="min-stock">⚠️ Low Stock Alert</label>
                         <input type="number" id="min-stock" min="0" value="5">
                     </div>
                     <div class="form-group">
-                        <label for="supplier">🏭 Proveedor (Opcional)</label>
-                        <input type="text" id="supplier" placeholder="Nombre del proveedor">
+                        <label for="supplier">🏭 Supplier (Optional)</label>
+                        <input type="text" id="supplier" placeholder="Supplier name">
                     </div>
                 </div>
-                <button type="submit" class="btn">✅ Agregar Producto</button>
+                <button type="submit" class="btn">✅ Add Product</button>
             </form>
         </div>
 
         <!-- Inventory Section -->
         <div id="inventory" class="section">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
-                <h2 style="color: #2c3e50; margin: 0;">📋 Gestión de Inventario</h2>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button class="btn" onclick="exportData()" data-permission="canExportData">📤 Exportar</button>
-                    <label for="import-file" class="btn" style="margin: 0; cursor: pointer;" data-permission="canImportData">📥 Importar</label>
-                    <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
+            <div class="section-header">
+                <h2>📋 Inventory Management</h2>
+                <div class="action-buttons">
+                    <button class="btn" id="export-btn">📤 Export</button>
+                    <label for="import-file" class="btn">📥 Import</label>
+                    <input type="file" id="import-file" accept=".json" style="display: none;">
                 </div>
             </div>
             
-            <input type="text" id="search" class="search-bar" placeholder="🔍 Buscar por SKU, nombre, categoría o código de barras...">
+            <input type="text" id="search" class="search-bar" placeholder="🔍 Search by SKU, name, category or barcode...">
             
-            <div style="margin-bottom: 20px;">
-                <select id="category-filter" onchange="filterInventory()">
-                    <option value="">🗂️ Todas las Categorías</option>
+            <div class="filter-section">
+                <select id="category-filter">
+                    <option value="">🗂️ All Categories</option>
                 </select>
             </div>
 
-            <div style="overflow-x: auto;">
+            <div class="table-container">
                 <table class="inventory-table">
                     <thead>
                         <tr>
                             <th>🏷️ SKU</th>
-                            <th>📝 Nombre / Código de Barras</th>
-                            <th>🗂️ Categoría</th>
-                            <th>💰 Precio</th>
-                            <th>📦 Cantidad</th>
-                            <th>⚠️ Stock Mín</th>
-                            <th>💵 Valor</th>
-                            <th>⚙️ Acciones</th>
+                            <th>📝 Name / Barcode</th>
+                            <th>🗂️ Category</th>
+                            <th>💰 Price</th>
+                            <th>📦 Quantity</th>
+                            <th>⚠️ Min Stock</th>
+                            <th>💵 Value</th>
+                            <th>⚙️ Actions</th>
                         </tr>
                     </thead>
-                    <tbody id="inventory-body">
-                    </tbody>
+                    <tbody id="inventory-body"></tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Sell Item Section -->
+        <!-- Sell Section -->
         <div id="sell" class="section">
-            <h2 style="margin-bottom: 20px; color: #2c3e50;">💰 Vender Producto</h2>
+            <h2>💰 Sell Product</h2>
             <form id="sell-form">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="sell-sku">🔍 SKU, Código de Barras o Nombre</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="sell-sku" placeholder="Buscar producto" required>
-                            <button type="button" class="btn" onclick="scanBarcodeForSell()">📱 Escanear</button>
+                        <label for="sell-sku">🔍 SKU, Barcode or Name</label>
+                        <div class="input-with-button">
+                            <input type="text" id="sell-sku" placeholder="Search product" required>
+                            <button type="button" class="btn" id="scan-barcode-sell">📱 Scan</button>
                         </div>
-                        <div id="search-suggestions" style="background: white; border: 1px solid #ddd; max-height: 200px; overflow-y: auto; display: none; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);"></div>
+                        <div id="search-suggestions" class="suggestions-dropdown"></div>
                     </div>
                     <div class="form-group">
-                        <label for="sell-quantity">📦 Cantidad a Vender</label>
+                        <label for="sell-quantity">📦 Quantity to Sell</label>
                         <input type="number" id="sell-quantity" min="1" required>
                     </div>
                 </div>
-                <div id="product-info" style="margin: 20px 0; padding: 15px; background: rgba(39, 174, 96, 0.1); border-radius: 10px; border-left: 4px solid #27ae60; display: none;">
-                    <h3>📋 Detalles del Producto:</h3>
+                <div id="product-info" class="product-info-box" style="display: none;">
+                    <h3>📋 Product Details:</h3>
                     <p id="product-details"></p>
                 </div>
-                <button type="submit" class="btn">✅ Completar Venta</button>
+                <button type="submit" class="btn">✅ Complete Sale</button>
             </form>
         </div>
 
         <!-- Restock Section -->
         <div id="restock" class="section">
-            <h2 style="margin-bottom: 20px; color: #2c3e50;">📈 Reabastecer Productos</h2>
+            <h2>📈 Restock Products</h2>
             <form id="restock-form">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="restock-sku">🔍 SKU, Código de Barras o Nombre</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="restock-sku" placeholder="Buscar producto" required>
-                            <button type="button" class="btn" onclick="scanBarcodeForRestock()">📱 Escanear</button>
+                        <label for="restock-sku">🔍 SKU, Barcode or Name</label>
+                        <div class="input-with-button">
+                            <input type="text" id="restock-sku" placeholder="Search product" required>
+                            <button type="button" class="btn" id="scan-barcode-restock">📱 Scan</button>
                         </div>
-                        <div id="restock-suggestions" style="background: white; border: 1px solid #ddd; max-height: 200px; overflow-y: auto; display: none; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);"></div>
+                        <div id="restock-suggestions" class="suggestions-dropdown"></div>
                     </div>
                     <div class="form-group">
-                        <label for="restock-quantity">📦 Cantidad a Agregar</label>
+                        <label for="restock-quantity">📦 Quantity to Add</label>
                         <input type="number" id="restock-quantity" min="1" required>
                     </div>
                 </div>
-                <div id="restock-product-info" style="margin: 20px 0; padding: 15px; background: rgba(52, 152, 219, 0.1); border-radius: 10px; border-left: 4px solid #3498db; display: none;">
-                    <h3>📋 Detalles del Producto:</h3>
+                <div id="restock-product-info" class="product-info-box" style="display: none;">
+                    <h3>📋 Product Details:</h3>
                     <p id="restock-product-details"></p>
                 </div>
-                <button type="submit" class="btn">✅ Agregar Stock</button>
+                <button type="submit" class="btn">✅ Add Stock</button>
             </form>
         </div>
 
         <!-- Barcode Scanner Section -->
         <div id="barcode" class="section">
-            <h2 style="margin-bottom: 20px; color: #2c3e50;">📱 Escáner de Código de Barras</h2>
+            <h2>📱 Barcode Scanner</h2>
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 30px;">
-                <div style="background: rgba(52, 152, 219, 0.1); padding: 20px; border-radius: 15px; border: 2px solid #3498db;">
-                    <h3 style="margin-bottom: 15px; color: #2c3e50;">🔍 Búsqueda Rápida</h3>
+            <div class="scanner-grid">
+                <div class="scanner-card">
+                    <h3>🔍 Quick Search</h3>
                     <div class="form-group">
-                        <label for="barcode-search">📱 Código de Barras</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="barcode-search" placeholder="Escanear o ingresar código">
-                            <button type="button" class="btn" onclick="startBarcodeScanning()">📱 Iniciar Escáner</button>
+                        <label for="barcode-search">📱 Barcode</label>
+                        <div class="input-with-button">
+                            <input type="text" id="barcode-search" placeholder="Scan or enter code">
+                            <button type="button" class="btn" id="start-scanner">📱 Start Scanner</button>
                         </div>
                     </div>
-                    <button type="button" class="btn" onclick="searchByBarcode()">🔍 Buscar Producto</button>
+                    <button type="button" class="btn" id="search-barcode">🔍 Search Product</button>
                 </div>
                 
-                <div style="background: rgba(39, 174, 96, 0.1); padding: 20px; border-radius: 15px; border: 2px solid #27ae60;">
-                    <h3 style="margin-bottom: 15px; color: #2c3e50;">⚡ Venta Rápida</h3>
+                <div class="scanner-card">
+                    <h3>⚡ Quick Sale</h3>
                     <div class="form-group">
-                        <label for="quick-barcode">📱 Código de Barras</label>
-                        <div style="display: flex; gap: 10px;">
-                            <input type="text" id="quick-barcode" placeholder="Escanear producto">
-                            <button type="button" class="btn" onclick="startQuickSaleScanning()">📱 Escanear</button>
+                        <label for="quick-barcode">📱 Barcode</label>
+                        <div class="input-with-button">
+                            <input type="text" id="quick-barcode" placeholder="Scan product">
+                            <button type="button" class="btn" id="scan-quick-sale">📱 Scan</button>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="quick-quantity">📦 Cantidad</label>
+                        <label for="quick-quantity">📦 Quantity</label>
                         <input type="number" id="quick-quantity" value="1" min="1">
                     </div>
-                    <button type="button" class="btn" onclick="quickSale()">⚡ Venta Rápida</button>
+                    <button type="button" class="btn" id="quick-sale-btn">⚡ Quick Sale</button>
                 </div>
             </div>
 
-            <!-- Camera Scanner -->
-            <div id="camera-container" style="display: none; text-align: center; margin: 20px 0; padding: 20px; background: rgba(44, 62, 80, 0.1); border-radius: 15px;">
-                <h3 style="color: #2c3e50; margin-bottom: 15px;">📹 Escáner de Cámara</h3>
-                <video id="barcode-video" style="width: 100%; max-width: 500px; border: 3px solid #e67e22; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.2);"></video>
-                <div style="margin: 15px 0;">
-                    <button type="button" class="btn btn-danger" onclick="stopBarcodeScanning()">🛑 Detener Escáner</button>
+            <div id="camera-container" style="display: none;">
+                <h3>📹 Camera Scanner</h3>
+                <video id="barcode-video"></video>
+                <div>
+                    <button type="button" class="btn btn-danger" id="stop-scanner">🛑 Stop Scanner</button>
                 </div>
                 <canvas id="barcode-canvas" style="display: none;"></canvas>
             </div>
 
-            <div id="barcode-result" style="margin: 20px 0;"></div>
+            <div id="barcode-result"></div>
         </div>
 
         <!-- Reports Section -->
         <div id="reports" class="section">
-            <h2 style="margin-bottom: 20px; color: #2c3e50;">📋 Reportes y Estadísticas</h2>
+            <h2>📋 Reports and Analytics</h2>
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
-                <div style="background: rgba(39, 174, 96, 0.1); padding: 20px; border-radius: 15px; border: 2px solid #27ae60;">
-                    <h3 style="color: #27ae60; margin-bottom: 15px;">📈 Inventario</h3>
-                    <button class="btn" onclick="generateInventoryReport()">📊 Reporte Completo</button>
+            <div class="reports-grid">
+                <div class="report-card">
+                    <h3>📈 Inventory</h3>
+                    <button class="btn" id="inventory-report">📊 Full Report</button>
                 </div>
-                
-                <div style="background: rgba(230, 126, 34, 0.1); padding: 20px; border-radius: 15px; border: 2px solid #e67e22;">
-                    <h3 style="color: #e67e22; margin-bottom: 15px;">⚠️ Stock Bajo</h3>
-                    <button class="btn" onclick="generateLowStockReport()">📋 Productos Críticos</button>
+                <div class="report-card">
+                    <h3>⚠️ Low Stock</h3>
+                    <button class="btn" id="low-stock-report">📋 Critical Products</button>
                 </div>
-                
-                <div style="background: rgba(52, 152, 219, 0.1); padding: 20px; border-radius: 15px; border: 2px solid #3498db;">
-                    <h3 style="color: #3498db; margin-bottom: 15px;">💰 Ventas</h3>
-                    <button class="btn" onclick="generateSalesReport()">📈 Historial de Ventas</button>
+                <div class="report-card">
+                    <h3>💰 Sales</h3>
+                    <button class="btn" id="sales-report">📈 Sales History</button>
                 </div>
-                
-                <div style="background: rgba(231, 76, 60, 0.1); padding: 20px; border-radius: 15px; border: 2px solid #e74c3c;" data-permission="canViewReports">
-                    <h3 style="color: #e74c3c; margin-bottom: 15px;">🔐 Seguridad</h3>
-                    <button class="btn" onclick="generateSecurityReport()">🛡️ Log de Seguridad</button>
+                <div class="report-card">
+                    <h3>🔐 Security</h3>
+                    <button class="btn" id="security-report">🛡️ Security Log</button>
                 </div>
             </div>
             
-            <div id="report-content" style="margin-top: 30px;"></div>
+            <div id="report-content"></div>
         </div>
 
         <!-- Alert Container -->
-        <div id="alerts" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; max-width: 400px;"></div>
+        <div id="alerts"></div>
     </div>
 
-    <!-- Scripts -->
+    <!-- JavaScript Files - Load in exact order -->
     <script src="js/validation-utils.js"></script>
     <script src="js/security-utils.js"></script>
     <script src="js/database.js"></script>
@@ -348,346 +334,9 @@
     <script src="js/ui-controller.js"></script>
     <script src="js/auth-system.js"></script>
     <script src="js/app.js"></script>
-    
-    <script>
-        // Global variables
-        let app;
-        let authSystem;
-        
-        // Initialize application when DOM loads
-        document.addEventListener('DOMContentLoaded', async () => {
-            try {
-                console.log('🔐 Inicializando Sistema Seguro...');
-                
-                // Initialize authentication system first
-                authSystem = new AuthenticationSystem();
-                window.authSystem = authSystem;
-                
-                // Setup login form handler
-                setupLoginForm();
-                
-                console.log('✅ Sistema de autenticación inicializado');
-                
-            } catch (error) {
-                console.error('Failed to initialize application:', error);
-                showError('Error inicializando la aplicación: ' + error.message);
-            }
-        });
-        
-        function setupLoginForm() {
-            const loginForm = document.getElementById('login-form');
-            if (loginForm) {
-                loginForm.addEventListener('submit', handleLogin);
-            }
-            
-            // Focus username field
-            setTimeout(() => {
-                const usernameField = document.getElementById('username');
-                if (usernameField) {
-                    usernameField.focus();
-                }
-            }, 100);
-        }
-        
-        async function handleLogin(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            const messageDiv = document.getElementById('login-message');
-
-            if (!username || !password) {
-                messageDiv.textContent = 'Por favor, complete todos los campos';
-                messageDiv.style.color = '#e74c3c';
-                return;
-            }
-
-            // Attempt authentication
-            const result = authSystem.authenticate(username, password);
-            
-            if (result.success) {
-                messageDiv.textContent = 'Acceso autorizado...';
-                messageDiv.style.color = '#27ae60';
-                
-                // Hide login overlay and show main app
-                setTimeout(async () => {
-                    document.getElementById('login-overlay').style.display = 'none';
-                    document.getElementById('main-app').style.display = 'block';
-                    
-                    // Update user info
-                    document.getElementById('current-user').textContent = `👤 ${username}`;
-                    
-                    // Initialize the main application
-                    await initializeMainApp();
-                }, 1000);
-                
-            } else {
-                messageDiv.textContent = result.message;
-                messageDiv.style.color = '#e74c3c';
-                
-                // Clear password field
-                document.getElementById('password').value = '';
-            }
-        }
-        
-        async function initializeMainApp() {
-            try {
-                // Initialize the main app without authentication (since we're already authenticated)
-                app = new ComercialGarciaApp();
-                await app.init();
-                
-                // Make instances globally accessible
-                window.app = app;
-                window.inventoryManager = app.inventoryManager;
-                window.barcodeScanner = app.barcodeScanner;
-                window.uiController = app.uiController;
-                
-                // Setup global functions
-                setupGlobalFunctions();
-                
-                // Setup permission-based UI
-                setupPermissionBasedUI();
-                
-                // Update session info
-                updateSessionInfo();
-                
-                console.log('🎉 Aplicación principal inicializada exitosamente');
-                
-            } catch (error) {
-                console.error('Error initializing main app:', error);
-                showError('Error inicializando la aplicación: ' + error.message);
-            }
-        }
-        
-        function setupGlobalFunctions() {
-            // Navigation functions
-            window.showSection = (sectionId) => {
-                if (app.uiController) {
-                    app.uiController.showSection(sectionId);
-                }
-            };
-            
-            // Authentication functions
-            window.logout = () => {
-                if (confirm('¿Está seguro de que desea cerrar sesión?')) {
-                    authSystem.logout();
-                    document.getElementById('main-app').style.display = 'none';
-                    document.getElementById('login-overlay').style.display = 'block';
-                    setupLoginForm();
-                }
-            };
-            
-            // Permission check function
-            window.checkPermission = (permission) => {
-                const permissions = authSystem.getUserPermissions();
-                return permissions[permission] || false;
-            };
-            
-            // Barcode scanning functions
-            window.scanBarcodeForAdd = () => app.scanBarcodeForField('barcode');
-            window.scanBarcodeForSell = () => app.scanBarcodeForField('sell-sku');
-            window.scanBarcodeForRestock = () => app.scanBarcodeForField('restock-sku');
-            window.startBarcodeScanning = () => app.startGeneralBarcodeScanning();
-            window.startQuickSaleScanning = () => app.scanBarcodeForField('quick-barcode');
-            window.stopBarcodeScanning = () => app.barcodeScanner.stopScanning();
-            
-            // Search and product info functions
-            window.searchByBarcode = () => app.searchProductByBarcode();
-            window.showSellProductInfo = (identifier) => {
-                if (app.uiController) {
-                    app.uiController.showSellProductInfo(identifier);
-                }
-            };
-            window.showRestockProductInfo = (identifier) => {
-                if (app.uiController) {
-                    app.uiController.showRestockProductInfo(identifier);
-                }
-            };
-            
-            // Quick sale function
-            window.quickSale = () => app.performQuickSale();
-            
-            // Import/Export functions
-            window.exportData = () => {
-                if (app.uiController) {
-                    app.uiController.exportData();
-                }
-            };
-            window.importData = (event) => {
-                if (app.uiController) {
-                    app.uiController.handleImport(event);
-                }
-            };
-            
-            // Filter function
-            window.filterInventory = () => {
-                if (app.uiController) {
-                    app.uiController.filterInventory();
-                }
-            };
-            
-            // Alert function
-            window.showAlert = (message, type) => {
-                if (app.uiController) {
-                    app.uiController.showAlert(message, type);
-                }
-            };
-        }
-        
-        function setupPermissionBasedUI() {
-            const permissions = authSystem.getUserPermissions();
-            
-            // Hide/show navigation buttons based on permissions
-            document.querySelectorAll('[data-permission]').forEach(element => {
-                const requiredPermission = element.getAttribute('data-permission');
-                if (!permissions[requiredPermission]) {
-                    element.style.display = 'none';
-                }
-            });
-        }
-        
-        function updateSessionInfo() {
-            const sessionInfo = authSystem.getSessionInfo();
-            const sessionDetails = document.getElementById('session-details');
-            
-            if (sessionInfo && sessionDetails) {
-                sessionDetails.innerHTML = `
-                    <strong>Usuario:</strong> ${sessionInfo.user}<br>
-                    <strong>Inicio de sesión:</strong> ${sessionInfo.loginTime.toLocaleString()}<br>
-                    <strong>Última actividad:</strong> ${sessionInfo.lastActivity.toLocaleString()}<br>
-                    <strong>Tiempo restante:</strong> ${Math.ceil(sessionInfo.timeLeft / 1000 / 60)} minutos
-                `;
-            }
-        }
-        
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.innerHTML = `
-                <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
-                           background: #f8d7da; color: #721c24; padding: 15px; border-radius: 10px; 
-                           border: 1px solid #f5c6cb; z-index: 10000; max-width: 500px;">
-                    <strong>Error:</strong> ${message}
-                    <button style="float: right; background: none; border: none; font-size: 18px; 
-                                  cursor: pointer;" onclick="this.parentElement.remove()">×</button>
-                </div>
-            `;
-            document.body.appendChild(errorDiv);
-            
-            // Auto-remove after 10 seconds
-            setTimeout(() => {
-                if (errorDiv.parentElement) {
-                    errorDiv.remove();
-                }
-            }, 10000);
-        }
-        
-        // Report generation functions
-        function generateInventoryReport() {
-            if (!window.checkPermission('canViewReports')) {
-                alert('Sin permisos para ver reportes');
-                return;
-            }
-            
-            const products = window.inventoryManager.getAllProducts();
-            const stats = window.inventoryManager.getStatistics();
-            
-            const reportContent = document.getElementById('report-content');
-            reportContent.innerHTML = `
-                <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #27ae60;">
-                    <h3 style="color: #27ae60; margin-bottom: 20px;">📊 Reporte de Inventario Completo</h3>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
-                        <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 10px;">
-                            <div style="font-size: 2rem; font-weight: bold; color: #27ae60;">${stats.totalProducts}</div>
-                            <div>Total Productos</div>
-                        </div>
-                        <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 10px;">
-                            <div style="font-size: 2rem; font-weight: bold; color: #e67e22;">${stats.totalValue.toFixed(2)}</div>
-                            <div>Valor Total</div>
-                        </div>
-                        <div style="text-align: center; padding: 15px; background: #f8f9fa; border-radius: 10px;">
-                            <div style="font-size: 2rem; font-weight: bold; color: #3498db;">${stats.categoriesCount}</div>
-                            <div>Categorías</div>
-                        </div>
-                    </div>
-                    <p><strong>Generado:</strong> ${new Date().toLocaleString()}</p>
-                    <button class="btn" onclick="window.print()" style="margin-top: 15px;">🖨️ Imprimir</button>
-                </div>
-            `;
-        }
-        
-        function generateLowStockReport() {
-            const lowStockProducts = window.inventoryManager.getLowStockProducts();
-            
-            const reportContent = document.getElementById('report-content');
-            reportContent.innerHTML = `
-                <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #e67e22;">
-                    <h3 style="color: #e67e22; margin-bottom: 20px;">⚠️ Reporte de Stock Bajo</h3>
-                    ${lowStockProducts.length === 0 ? 
-                        '<p style="color: #27ae60; font-size: 1.2rem;">✅ Todos los productos tienen stock adecuado</p>' :
-                        `<div style="margin-bottom: 20px;">
-                            <p><strong>${lowStockProducts.length}</strong> productos requieren reabastecimiento:</p>
-                            <ul style="margin-top: 15px;">
-                                ${lowStockProducts.map(product => 
-                                    `<li style="margin-bottom: 8px; padding: 8px; background: #fff3cd; border-radius: 5px;">
-                                        <strong>${product.name}</strong> (${product.sku}) - 
-                                        Stock: ${product.quantity} / Mínimo: ${product.minStock}
-                                    </li>`
-                                ).join('')}
-                            </ul>
-                        </div>`
-                    }
-                    <p><strong>Generado:</strong> ${new Date().toLocaleString()}</p>
-                </div>
-            `;
-        }
-        
-        function generateSalesReport() {
-            const reportContent = document.getElementById('report-content');
-            reportContent.innerHTML = `
-                <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #3498db;">
-                    <h3 style="color: #3498db; margin-bottom: 20px;">💰 Reporte de Ventas</h3>
-                    <p style="color: #7f8c8d;">Esta función estará disponible en una futura actualización.</p>
-                    <p>Permitirá ver:</p>
-                    <ul style="margin-top: 15px; color: #7f8c8d;">
-                        <li>Ventas por período</li>
-                        <li>Productos más vendidos</li>
-                        <li>Análisis de tendencias</li>
-                        <li>Ingresos totales</li>
-                    </ul>
-                </div>
-            `;
-        }
-        
-        function generateSecurityReport() {
-            if (!window.checkPermission('canViewReports') || authSystem.getCurrentUser() !== 'admin') {
-                alert('Solo el administrador puede ver el log de seguridad');
-                return;
-            }
-            
-            const securityLog = authSystem.getSecurityLog(50);
-            
-            const reportContent = document.getElementById('report-content');
-            reportContent.innerHTML = `
-                <div style="background: white; padding: 25px; border-radius: 15px; border: 2px solid #e74c3c;">
-                    <h3 style="color: #e74c3c; margin-bottom: 20px;">🔐 Log de Seguridad</h3>
-                    ${securityLog.length === 0 ? 
-                        '<p>No hay eventos de seguridad registrados</p>' :
-                        `<div style="max-height: 400px; overflow-y: auto;">
-                            ${securityLog.map(event => 
-                                `<div style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px; border-left: 3px solid ${
-                                    event.event.includes('SUCCESS') ? '#27ae60' : 
-                                    event.event.includes('FAILED') ? '#e74c3c' : '#3498db'
-                                };">
-                                    <strong>${event.event}</strong> - ${event.user || 'N/A'}<br>
-                                    <small>${new Date(event.timestamp).toLocaleString()}</small>
-                                </div>`
-                            ).join('')}
-                        </div>`
-                    }
-                    <p style="margin-top: 15px;"><strong>Últimos 50 eventos - Generado:</strong> ${new Date().toLocaleString()}</p>
-                </div>
-            `;
-        }
-    </script>
+    <script src="js/main.js"></script>
+    <script src="js/logout.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/reports.js"></script>
 </body>
 </html>

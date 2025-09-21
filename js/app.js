@@ -1,9 +1,9 @@
 /**
  * Main Application Entry Point
- * Comercial García Inventory Management System
+ * Stockpile Inventory Management System
  */
 
-class ComercialGarciaApp {
+class StockpileApp {
     constructor() {
         this.database = null;
         this.inventoryManager = null;
@@ -17,7 +17,7 @@ class ComercialGarciaApp {
      */
     async init() {
         try {
-            console.log('🏪 Inicializando Comercial García...');
+            console.log('📦 Initializing Stockpile...');
             
             // Show loading state
             this.showLoadingState();
@@ -25,31 +25,31 @@ class ComercialGarciaApp {
             // Initialize database
             this.database = new InventoryDB();
             await this.database.init();
-            console.log('✅ Base de datos inicializada');
+            console.log('✅ Database initialized');
             
             // Initialize inventory manager
             this.inventoryManager = new InventoryManager(this.database);
             await this.inventoryManager.init();
-            console.log('✅ Gestor de inventario inicializado');
+            console.log('✅ Inventory manager initialized');
             
             // Initialize barcode scanner
             this.barcodeScanner = new BarcodeScanner();
             this.barcodeScanner.init();
-            console.log('✅ Escáner de códigos inicializado');
+            console.log('✅ Barcode scanner initialized');
             
             // Initialize UI controller
             this.uiController = new UIController(this.inventoryManager, this.barcodeScanner);
-            console.log('✅ Controlador de UI inicializado');
+            console.log('✅ UI controller initialized');
             
             // Hide loading state
             this.hideLoadingState();
             
             this.isInitialized = true;
-            console.log('🎉 Comercial García inicializado exitosamente');
+            console.log('🎉 Stockpile initialized successfully');
             
         } catch (error) {
-            console.error('❌ Error inicializando la aplicación:', error);
-            this.showError('Error inicializando la aplicación: ' + error.message);
+            console.error('❌ Error initializing application:', error);
+            this.showError('Application initialization error: ' + error.message);
         }
     }
 
@@ -83,7 +83,7 @@ class ComercialGarciaApp {
         } catch (error) {
             console.error('Error starting barcode scanning:', error);
             if (this.uiController) {
-                this.uiController.showAlert('Error iniciando escáner: ' + error.message, 'warning');
+                this.uiController.showAlert('Scanner error: ' + error.message, 'warning');
             }
         }
     }
@@ -102,7 +102,7 @@ class ComercialGarciaApp {
         } catch (error) {
             console.error('Error starting general barcode scanning:', error);
             if (this.uiController) {
-                this.uiController.showAlert('Error iniciando escáner: ' + error.message, 'warning');
+                this.uiController.showAlert('Scanner error: ' + error.message, 'warning');
             }
         }
     }
@@ -121,19 +121,19 @@ class ComercialGarciaApp {
             if (product && resultDiv) {
                 resultDiv.innerHTML = `
                     <div class="alert alert-success">
-                        <h3>✅ Producto Encontrado</h3>
+                        <h3>✅ Product Found</h3>
                         <strong>${product.name}</strong><br>
                         SKU: ${product.sku}<br>
-                        Categoría: ${product.category}<br>
-                        Precio: $${product.price.toFixed(2)}<br>
-                        Stock: ${product.quantity} unidades<br>
-                        ${product.supplier ? 'Proveedor: ' + product.supplier + '<br>' : ''}
+                        Category: ${product.category}<br>
+                        Price: $${product.price.toFixed(2)}<br>
+                        Stock: ${product.quantity} units<br>
+                        ${product.supplier ? 'Supplier: ' + product.supplier + '<br>' : ''}
                         <div style="margin-top: 10px;">
                             <button class="btn" onclick="window.showSection('sell'); window.document.getElementById('sell-sku').value='${product.sku}'; window.showSellProductInfo('${product.sku}')">
-                                💰 Vender
+                                💰 Sell
                             </button>
                             <button class="btn" onclick="window.showSection('restock'); window.document.getElementById('restock-sku').value='${product.sku}'; window.showRestockProductInfo('${product.sku}')">
-                                📈 Reabastecer
+                                📈 Restock
                             </button>
                         </div>
                     </div>
@@ -141,10 +141,10 @@ class ComercialGarciaApp {
             } else if (resultDiv) {
                 resultDiv.innerHTML = `
                     <div class="alert alert-warning">
-                        <h3>❌ Producto No Encontrado</h3>
-                        <p>No se encontró ningún producto con el código de barras: <strong>${barcode}</strong></p>
+                        <h3>❌ Product Not Found</h3>
+                        <p>No product found with barcode: <strong>${barcode}</strong></p>
                         <button class="btn" onclick="window.showSection('add-product'); window.document.getElementById('barcode').value='${barcode}'">
-                            ➕ Agregar Nuevo Producto
+                            ➕ Add New Product
                         </button>
                     </div>
                 `;
@@ -152,7 +152,7 @@ class ComercialGarciaApp {
         } catch (error) {
             console.error('Error searching product by barcode:', error);
             if (this.uiController) {
-                this.uiController.showAlert('Error buscando producto: ' + error.message, 'danger');
+                this.uiController.showAlert('Search error: ' + error.message, 'danger');
             }
         }
     }
@@ -166,7 +166,7 @@ class ComercialGarciaApp {
         
         if (!barcode || !quantity || quantity <= 0) {
             if (this.uiController) {
-                this.uiController.showAlert('Por favor ingrese código de barras y cantidad válidos', 'warning');
+                this.uiController.showAlert('Please enter valid barcode and quantity', 'warning');
             }
             return;
         }
@@ -181,7 +181,7 @@ class ComercialGarciaApp {
         } catch (error) {
             console.error('Error in quick sale:', error);
             if (this.uiController) {
-                this.uiController.showAlert('Error en venta rápida: ' + error.message, 'danger');
+                this.uiController.showAlert('Quick sale error: ' + error.message, 'danger');
             }
         }
     }
@@ -203,7 +203,7 @@ class ComercialGarciaApp {
                         <div style="border: 4px solid #f3f3f3; border-top: 4px solid #3498db; 
                                    border-radius: 50%; width: 50px; height: 50px; 
                                    animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
-                        <h3>Cargando Comercial García...</h3>
+                        <h3>Loading Stockpile...</h3>
                     </div>
                 </div>
                 <style>
@@ -293,5 +293,5 @@ window.addEventListener('beforeunload', () => {
 
 // Export for module usage
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ComercialGarciaApp;
+    module.exports = StockpileApp;
 }

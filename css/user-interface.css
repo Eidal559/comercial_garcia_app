@@ -1,0 +1,318 @@
+/* User Interface Specific Styles */
+
+/* Login Form Styling */
+.login-overlay p {
+    color: #7f8c8d;
+    margin-bottom: 30px;
+}
+
+.default-users {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #ecf0f1;
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+/* User Info Section */
+#user-info {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 14px;
+    background: rgba(0, 0, 0, 0.8) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 10px 15px !important;
+    border-radius: 8px !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+#user-info #current-user {
+    color: white !important;
+    font-weight: 500 !important;
+}
+
+#user-info .separator {
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 8px;
+}
+
+#user-info #logout-btn {
+    background: rgba(231, 76, 60, 0.8) !important;
+    border: 1px solid #c0392b !important;
+    color: white !important;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease;
+}
+
+#user-info #logout-btn:hover {
+    background: rgba(231, 76, 60, 1) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Section Headers */
+.section h2 {
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.section-header h2 {
+    color: #2c3e50;
+    margin: 0;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+    margin: 0;
+    cursor: pointer;
+}
+
+/* Input with Button */
+.input-with-button {
+    display: flex;
+    gap: 10px;
+}
+
+.input-with-button input {
+    flex: 1;
+}
+
+/* Filter Section */
+.filter-section {
+    margin-bottom: 20px;
+}
+
+/* Table Container */
+.table-container {
+    overflow-x: auto;
+}
+
+/* Product Info Box */
+.product-info-box {
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 10px;
+    border-left: 4px solid;
+}
+
+#product-info {
+    background: rgba(39, 174, 96, 0.1);
+    border-left-color: #27ae60;
+}
+
+#restock-product-info {
+    background: rgba(52, 152, 219, 0.1);
+    border-left-color: #3498db;
+}
+
+/* Suggestions Dropdown */
+.suggestions-dropdown {
+    background: white;
+    border: 1px solid #ddd;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* Scanner Grid */
+.scanner-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.scanner-card {
+    padding: 20px;
+    border-radius: 15px;
+    border: 2px solid;
+}
+
+.scanner-card:first-child {
+    background: rgba(52, 152, 219, 0.1);
+    border-color: #3498db;
+}
+
+.scanner-card:last-child {
+    background: rgba(39, 174, 96, 0.1);
+    border-color: #27ae60;
+}
+
+.scanner-card h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+/* Camera Container */
+#camera-container {
+    text-align: center;
+    margin: 20px 0;
+    padding: 20px;
+    background: rgba(44, 62, 80, 0.1);
+    border-radius: 15px;
+}
+
+#camera-container h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+#barcode-video {
+    width: 100%;
+    max-width: 500px;
+    border: 3px solid #e67e22;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+#camera-container > div {
+    margin: 15px 0;
+}
+
+/* Reports Grid */
+.reports-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.report-card {
+    padding: 20px;
+    border-radius: 15px;
+    border: 2px solid;
+}
+
+.report-card:nth-child(1) {
+    background: rgba(39, 174, 96, 0.1);
+    border-color: #27ae60;
+}
+
+.report-card:nth-child(1) h3 {
+    color: #27ae60;
+}
+
+.report-card:nth-child(2) {
+    background: rgba(230, 126, 34, 0.1);
+    border-color: #e67e22;
+}
+
+.report-card:nth-child(2) h3 {
+    color: #e67e22;
+}
+
+.report-card:nth-child(3) {
+    background: rgba(52, 152, 219, 0.1);
+    border-color: #3498db;
+}
+
+.report-card:nth-child(3) h3 {
+    color: #3498db;
+}
+
+.report-card:nth-child(4) {
+    background: rgba(231, 76, 60, 0.1);
+    border-color: #e74c3c;
+}
+
+.report-card:nth-child(4) h3 {
+    color: #e74c3c;
+}
+
+.report-card h3 {
+    margin-bottom: 15px;
+}
+
+/* Session Info */
+#session-info {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(52, 152, 219, 0.1);
+    border-radius: 10px;
+    border-left: 4px solid #3498db;
+}
+
+#session-info h4 {
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+/* Alerts Container */
+#alerts {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+}
+
+/* Button States */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #user-info {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    
+    .section-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .action-buttons {
+        justify-content: center;
+    }
+    
+    .scanner-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .reports-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .input-with-button {
+        flex-direction: column;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
