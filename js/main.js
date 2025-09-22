@@ -1,6 +1,6 @@
 /**
- * Main Application Initialization
- * Stockpile Inventory Management System
+ * Enhanced Main Application Initialization
+ * This replaces your existing main.js file
  */
 
 // Global variables
@@ -18,6 +18,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Setup login form handler
         setupLoginForm();
+        
+        // Check if user is already logged in
+        if (authSystem.isUserAuthenticated()) {
+            console.log('User already authenticated, showing main app');
+            await showMainApplication();
+        }
         
         console.log('✅ Authentication system initialized');
         
@@ -62,16 +68,9 @@ async function handleLogin(e) {
         messageDiv.textContent = 'Access granted...';
         messageDiv.style.color = '#27ae60';
         
-        // Hide login overlay and show main app
+        // Hide login overlay and show main app after delay
         setTimeout(async () => {
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            
-            // Update user info
-            document.getElementById('current-user').textContent = `👤 ${username}`;
-            
-            // Initialize the main application
-            await initializeMainApp();
+            await showMainApplication();
         }, 1000);
         
     } else {
@@ -81,6 +80,27 @@ async function handleLogin(e) {
         // Clear password field
         document.getElementById('password').value = '';
     }
+}
+
+async function showMainApplication() {
+    // Hide login and show main app
+    document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('main-app').style.display = 'block';
+    
+    // Update user info
+    const currentUser = authSystem.getCurrentUser();
+    const userInfoElement = document.getElementById('current-user');
+    if (userInfoElement) {
+        userInfoElement.textContent = `👤 ${currentUser}`;
+    }
+    
+    // Initialize the main application
+    await initializeMainApp();
+    
+    // Setup logout functionality AFTER main app is ready
+    setTimeout(() => {
+        setupLogoutFunctionality();
+    }, 500);
 }
 
 async function initializeMainApp() {
@@ -104,11 +124,113 @@ async function initializeMainApp() {
         // Update session info
         updateSessionInfo();
         
+        // Emit event that app is initialized
+        window.dispatchEvent(new CustomEvent('app-initialized'));
+        
         console.log('🎉 Main application initialized successfully');
         
     } catch (error) {
         console.error('Error initializing main app:', error);
         showError('Application initialization error: ' + error.message);
+    }
+}
+
+function setupLogoutFunctionality() {
+    console.log('🔧 Setting up logout functionality...');
+    
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        // Remove any existing onclick attribute
+        logoutBtn.removeAttribute('onclick');
+        
+        // Clone the button to remove all event listeners
+        const newLogoutBtn = logoutBtn.cloneNode(true);
+        logoutBtn.parentNode.replaceChild(newLogoutBtn, logoutBtn);
+        
+        // Add fresh event listener
+        newLogoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🖱️ Logout button clicked');
+            handleLogout();
+        });
+        
+        // Also make it work with window.performLogout if available
+        if (window.performLogout) {
+            newLogoutBtn.onclick = (e) => {
+                e.preventDefault();
+                window.performLogout();
+            };
+        }
+        
+        console.log('✅ Logout functionality setup complete');
+    } else {
+        console.error('❌ Logout button not found');
+        // Retry after a delay
+        setTimeout(setupLogoutFunctionality, 1000);
+    }
+}
+
+function handleLogout() {
+    if (confirm('Are you sure you want to logout?')) {
+        console.log('🚪 Performing logout...');
+        
+        try {
+            // Use auth system logout
+            if (authSystem) {
+                authSystem.logout(false);
+            }
+            
+            // Clear localStorage
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Destroy app
+            if (app) {
+                try {
+                    app.destroy();
+                } catch (e) {
+                    console.log('App destroy error (non-critical):', e.message);
+                }
+                app = null;
+            }
+            
+            // Clear global variables
+            window.app = null;
+            window.inventoryManager = null;
+            window.barcodeScanner = null;
+            window.uiController = null;
+            
+            // Reset UI
+            document.getElementById('main-app').style.display = 'none';
+            document.getElementById('login-overlay').style.display = 'block';
+            
+            // Clear login form
+            const username = document.getElementById('username');
+            const password = document.getElementById('password');
+            const message = document.getElementById('login-message');
+            
+            if (username) {
+                username.value = '';
+                setTimeout(() => username.focus(), 100);
+            }
+            if (password) password.value = '';
+            if (message) {
+                message.textContent = 'Logged out successfully';
+                message.style.color = '#27ae60';
+                setTimeout(() => {
+                    message.textContent = '';
+                }, 3000);
+            }
+            
+            console.log('✅ Logout completed successfully');
+            
+        } catch (error) {
+            console.error('❌ Logout error:', error);
+            if (confirm('Logout failed. Reload page to reset?')) {
+                window.location.reload();
+            }
+        }
     }
 }
 
@@ -200,3 +322,6 @@ function showError(message) {
         }
     }, 10000);
 }
+
+// Make logout function globally available
+window.handleLogout = handleLogout;

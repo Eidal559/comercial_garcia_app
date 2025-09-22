@@ -190,7 +190,7 @@ class AuthenticationSystem {
                     console.log(`Restored session for user: ${this.currentUser}`);
                 } else {
                     // Session expired
-                    this.logout();
+                    this.logout(true);
                 }
             } catch (error) {
                 console.error('Error parsing session data:', error);
@@ -279,15 +279,18 @@ class AuthenticationSystem {
     }
 
     /**
-     * Logout user
+     * Enhanced logout user method
      * @param {boolean} auto - Whether this is an automatic logout
      */
     logout(auto = false) {
+        console.log('🚪 AuthSystem logout called', auto ? '(auto)' : '(manual)');
+        
         this.isAuthenticated = false;
         this.currentUser = null;
         
         // Clear session data
         localStorage.removeItem(this.sessionKey);
+        localStorage.removeItem(this.attemptsKey); // Also clear failed attempts
         
         // Clear session timer
         if (this.sessionTimer) {
@@ -295,13 +298,55 @@ class AuthenticationSystem {
             this.sessionTimer = null;
         }
 
-        console.log(auto ? 'Session expired - auto logout' : 'User logged out');
+        console.log(auto ? 'Session expired - auto logout' : 'User logged out manually');
         
-        // Show login form again
-        if (window.app && window.app.showLoginForm) {
-            const message = auto ? 'Session expired. Please sign in again.' : null;
-            window.app.showLoginForm(message);
+        // Reset UI to login state
+        this.showLoginScreen(auto);
+    }
+
+    /**
+     * Show login screen with optional message
+     * @param {boolean} auto - Whether this is from auto logout
+     */
+    showLoginScreen(auto = false) {
+        const mainApp = document.getElementById('main-app');
+        const loginOverlay = document.getElementById('login-overlay');
+        const messageDiv = document.getElementById('login-message');
+        
+        // Hide main app
+        if (mainApp) {
+            mainApp.style.display = 'none';
         }
+        
+        // Show login overlay
+        if (loginOverlay) {
+            loginOverlay.style.display = 'block';
+        }
+        
+        // Clear and focus login form
+        const username = document.getElementById('username');
+        const password = document.getElementById('password');
+        
+        if (username) {
+            username.value = '';
+            setTimeout(() => username.focus(), 100);
+        }
+        if (password) {
+            password.value = '';
+        }
+        
+        // Show message if auto logout
+        if (messageDiv) {
+            if (auto) {
+                messageDiv.textContent = 'Session expired. Please sign in again.';
+                messageDiv.style.color = '#e67e22';
+            } else {
+                messageDiv.textContent = '';
+                messageDiv.style.color = '';
+            }
+        }
+        
+        console.log('Login screen displayed');
     }
 
     /**
